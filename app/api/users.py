@@ -3,10 +3,14 @@ from app.api.errors import bad_request
 from app.models.user import User
 from app import db
 from flask import jsonify, request, url_for, abort
+from app.api.auth import token_auth
 
 
 @bp.route("/users/<int:id>", methods=["GET"])
+@token_auth.login_required
 def get_user(id):
+    if token_auth.current_user().id != id:
+        abort(403)
     return jsonify(User.query.get_or_404(id).to_dict())
 
 

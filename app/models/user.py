@@ -56,8 +56,18 @@ class User(db.Model):
 
         return self.token
 
+    def get_token_lifetime(self):
+        if self.token_expiration:
+            liftetime = self.token_expiration - datetime.utcnow()
+            return liftetime.seconds
+        else:
+            return 0
+
     def revoke_token(self):
         self.token_expiration = datetime.utcnow() - timedelta(seconds=120)
+
+        db.session.add(self)
+        db.session.commit()
 
     @staticmethod
     def check_token(token):

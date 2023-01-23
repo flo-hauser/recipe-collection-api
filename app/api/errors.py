@@ -19,8 +19,12 @@ def bad_request(msg: str):
 
 @bp.app_errorhandler(404)
 def not_found_error(error):
-    print(error)
     return error_response(404, "Resource not found")
+
+
+@bp.app_errorhandler(403)
+def forbidden_error(status):
+    return error_response(403, "Access Frobidden")
 
 
 # TODO strip out reasons for production
