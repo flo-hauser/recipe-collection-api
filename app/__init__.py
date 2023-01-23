@@ -20,3 +20,6 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp, url_prefix="/api/1")
 
     return app
+
+
+from app.models.user import User
