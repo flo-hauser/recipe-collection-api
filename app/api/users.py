@@ -10,7 +10,10 @@ from app.api.auth import token_auth
 @bp.route("/users/<int:id>", methods=["GET"])
 @token_auth.login_required
 def get_user(id):
-    if token_auth.current_user().id != id:
+    if not (
+        token_auth.current_user().id == id
+        or "admin" in token_auth.current_user().get_roles()
+    ):
         abort(403)
     return jsonify(User.query.get_or_404(id).to_dict())
 
@@ -46,7 +49,14 @@ def create_user():
 
 
 @bp.route("/users/<int:id>", methods=["PUT"])
+@token_auth.login_required
 def update_user(id):
+    if not (
+        token_auth.current_user().id == id
+        or "admin" in token_auth.current_user().get_roles()
+    ):
+        abort(403)
+
     user: User = User.query.get_or_404(id)
     data = request.get_json() or {}
 
