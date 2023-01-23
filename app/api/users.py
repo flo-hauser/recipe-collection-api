@@ -1,6 +1,7 @@
 from . import bp
 from app.api.errors import bad_request
 from app.models.user import User
+from app.models.role import Role
 from app import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
@@ -15,8 +16,10 @@ def get_user(id):
 
 
 @bp.route("/users", methods=["GET"])
+@token_auth.login_required(role="admin")
 def get_users():
-    return jsonify([{"empty": "list of users"}])
+    users = User.query.all()
+    return jsonify([user.to_dict() for user in users])
 
 
 @bp.route("/users", methods=["POST"])
