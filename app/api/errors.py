@@ -1,5 +1,7 @@
-from flask import jsonify
+from flask import jsonify, request
 from werkzeug.http import HTTP_STATUS_CODES
+from app import db
+from app.api import bp
 
 
 def error_response(status_code: int, message: str = None):
@@ -13,3 +15,15 @@ def error_response(status_code: int, message: str = None):
 
 def bad_request(msg: str):
     return error_response(400, msg)
+
+
+@bp.app_errorhandler(404)
+def not_found_error(error):
+    print(error)
+    return error_response(404, "Resource not found")
+
+
+# TODO strip out reasons for production
+@bp.app_errorhandler(500)
+def internal_error(error):
+    return error_response(500, error)

@@ -40,4 +40,24 @@ def create_user():
 
 @bp.route("/users/<int:id>", methods=["PUT"])
 def update_user(id):
-    pass
+    user: User = User.query.get_or_404(id)
+    data = request.get_json() or {}
+
+    if "username" not in data or "email" not in data or "password" not in data:
+        return bad_request("must include username, email and password fields")
+
+    username = data["username"]
+    email = data["email"]
+    password = data["password"]
+
+    if (
+        not username == user.username
+        and User.query.filter_by(username=username).first()
+    ):
+        return bad_request("please use a different username")
+    if not email == user.email and User.query.filter_by(email=email).first():
+        return bad_request("please use a different email address")
+
+    user.from_dict(data, new_user=False)
+
+    return jsonify(user.to_dict())

@@ -1,6 +1,8 @@
 from app.extensions import db
 from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+import secrets
 
 
 class User(db.Model):
@@ -40,3 +42,28 @@ class User(db.Model):
         if include_email:
             data["email"] = self.email
         return data
+
+    def get_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        if self.token and self.token_expiration > now + timedelta(seconds=60):
+            return self.token
+
+        self.token = secrets.token_hex(64)
+        self.token_expiration = now + timedelta(seconds=expires_in)
+
+        db.session.add(self)
+        db.session.commit()
+
+        return self.token
+
+    def revoke_token(self):
+        self.token_expiration = datetime.utcnow() - timedelta(seconds=120)
+
+    @staticmethod
+    def check_token(token):
+        user: User = User.query.filter_by(token=token).first()
+
+        if user is None or user.token_expiration < datetime.utcnow():
+            return None
+        else:
+            return user
