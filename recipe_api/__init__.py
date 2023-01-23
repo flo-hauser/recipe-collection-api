@@ -17,8 +17,8 @@ def create_app(config_class=Config):
     migrate.init_app(app)
 
     # Register Blueprints
-    # TODO
-
+    from recipe_api.api import bp as api_bp
+    app.register_blueprint(api_bp, url_prefix="/api/1")
 
     return app
 
