@@ -14,8 +14,9 @@ def get_user(id):
         token_auth.current_user().id == id
         or "admin" in token_auth.current_user().get_roles()
     ):
-        abort(403)
-    return jsonify(User.query.get_or_404(id).to_dict())
+        return jsonify(User.query.get_or_404(id).to_dict(include_email=True))
+    else:
+        return jsonify(User.query.get_or_404(id).to_dict())
 
 
 @bp.route("/users", methods=["GET"])
