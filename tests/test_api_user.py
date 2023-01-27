@@ -1,3 +1,6 @@
+from app import db
+from app.models.user import User
+
 new_user_dict = {
     "username": "user1",
     "email": "mail@example.com",
@@ -125,7 +128,7 @@ def test_get_user_with_invaid_id(client, auth):
     assert response.status_code == 404
 
 
-def test_edit_user(client, auth):
+def test_edit_user(app, client, auth):
     auth.login()
     user_id = auth.user.id
     request_body = {"username": "foo", "email": "foo@abc.de", "password": "foo"}
@@ -139,6 +142,11 @@ def test_edit_user(client, auth):
     assert response.json["username"] == request_body["username"]
     assert response.json["email"] == request_body["email"]
     assert "password" not in response.json
+    with app.app_context():
+        user: User = db.session.execute(
+            db.select(User).filter_by(id=user_id)
+        ).scalar_one()
+    assert user.check_password(request_body["password"])
 
 
 def test_edit_user_as_another_user(client, auth):
