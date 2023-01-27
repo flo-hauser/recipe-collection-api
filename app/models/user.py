@@ -18,6 +18,8 @@ class User(db.Model):
 
     # Relationships
     roles = db.relationship("Role", secondary=user_roles)
+    recipes = db.relationship("Recipe")
+    books = db.relationship("Book")
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)

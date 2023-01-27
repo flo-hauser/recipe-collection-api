@@ -24,3 +24,11 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp, url_prefix="/api/1")
 
     return app
+
+
+from app.models.user import User
+from app.models.role import Role
+from app.models.recipe import Recipe
+from app.models.book import Book
+from app.models.book import Magazine
+from app.models.book import Cookbook

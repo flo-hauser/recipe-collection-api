@@ -9,6 +9,8 @@ def register_cli(app):
     def init_db():
         db.create_all()
 
+    @app.cli.command("populate")
+    def populate():
         # Create basic roles
         admin_role = Role(id=1, role_name="admin")
         user_role = Role(id=2, role_name="user")
