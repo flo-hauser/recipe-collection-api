@@ -66,7 +66,8 @@ coverage run -m pytest && coverage report
 User in CI/CD with quality gates (here 90% overall):
 
 ```sh
-coverage run -m pytest && coverage report fail-under=90
+coverage run -m pytest
+coverage report --fail-under=90
 ```
 
 ## OpenAPI documentation
