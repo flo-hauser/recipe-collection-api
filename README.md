@@ -50,10 +50,27 @@ The User Authentication via basic-auth and tokens ist based upon [Flask-HTTPAuth
 
 ### Testing
 
-TODO
+Tests are executed with `pytest` test runner and are located in `./tests`.
+By default there are a few Users in a in-memory sqlite database, i.e. one admin user, `id:1`, and four unique users with the user role.
+
+```sh
+pytest
+```
+
+Coverage and coverage reports are made with [Coverage.py](https://coverage.readthedocs.io/en/7.1.0/). E.g.:
+
+```sh
+coverage run -m pytest && coverage report
+```
+
+User in CI/CD with quality gates (here 90% overall):
+
+```sh
+coverage run -m pytest && coverage report fail-under=90
+```
 
 ## OpenAPI documentation
 
 TODO
 
-The REST API ist documented with the OpenAPI document.
+The REST API ist documented in a OpenAPI document.
