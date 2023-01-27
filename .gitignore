@@ -23,6 +23,7 @@ instance/
 htmlcov/
 .coverage
 .coverage.*
+coverage.*
 *,cover
 
 # Database

@@ -1,6 +1,7 @@
 import pytest
 from app import create_app
 from config import TestConfig
+from tests.auth_actions import AuthActions
 from app.extensions import db
 from app.models.role import Role
 from app.models.user import User
@@ -28,8 +29,19 @@ def app():
         admin.email = "admin@example.com"
         admin.roles.append(admin_role)
         admin.roles.append(user_role)
-
         db.session.add(admin)
+
+        # 4 test users - user_n+1:pass_n+1 user_n+1@example.com
+        for i in range(4):
+            u = User()
+            user_data = {
+                "username": "user_{:d}".format(i + 1),
+                "email": "user_{:d}@example.com".format(i + 1),
+                "password": "pass_{:d}".format(i + 1),
+            }
+            u.from_dict(user_data, new_user=True)
+            db.session.add(u)
+
         db.session.commit()
 
     yield app
@@ -43,3 +55,8 @@ def client(app):
 @pytest.fixture()
 def runner(app):
     return app.test_cli_runner()
+
+
+@pytest.fixture
+def auth(app, client):
+    return AuthActions(app, client)
