@@ -10,20 +10,21 @@ from app.api.auth import token_auth
 @bp.route("/users/<int:id>", methods=["GET"])
 @token_auth.login_required
 def get_user(id):
-    if not (
-        token_auth.current_user().id == id
-        or "admin" in token_auth.current_user().get_roles()
-    ):
-        return jsonify(User.query.get_or_404(id).to_dict(include_email=True))
-    else:
-        return jsonify(User.query.get_or_404(id).to_dict())
+    requesting_user = token_auth.current_user()
+    include_email = False
+    if requesting_user.id == id:
+        include_email = True
+    elif "admin" in requesting_user.get_roles():
+        include_email = True
+
+    return jsonify(User.query.get_or_404(id).to_dict(include_email=include_email))
 
 
 @bp.route("/users", methods=["GET"])
 @token_auth.login_required(role="admin")
 def get_users():
     users = User.query.all()
-    return jsonify([user.to_dict() for user in users])
+    return jsonify([user.to_dict(include_email=True) for user in users])
 
 
 @bp.route("/users", methods=["POST"])
@@ -78,4 +79,10 @@ def update_user(id):
 
     user.from_dict(data, new_user=False)
 
-    return jsonify(user.to_dict())
+    if password:
+        user.set_password(password)
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify(user.to_dict(include_email=True))
