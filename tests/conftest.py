@@ -2,12 +2,13 @@ import pytest
 from app import create_app
 from config import TestConfig
 from tests.auth_actions import AuthActions
+from tests.book_fixtures import BookFixtures
 from app.extensions import db
 from app.models.role import Role
 from app.models.user import User
 
 
-@pytest.fixture()
+@pytest.fixture
 def app():
     app = create_app(TestConfig)
 
@@ -47,12 +48,12 @@ def app():
     yield app
 
 
-@pytest.fixture()
+@pytest.fixture
 def client(app):
     return app.test_client()
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner(app):
     return app.test_cli_runner()
 
@@ -60,3 +61,8 @@ def runner(app):
 @pytest.fixture
 def auth(app, client):
     return AuthActions(app, client)
+
+
+@pytest.fixture
+def books(app):
+    return BookFixtures(app)
