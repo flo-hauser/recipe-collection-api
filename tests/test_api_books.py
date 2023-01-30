@@ -53,8 +53,8 @@ def test_get_book_not_existing_id_404(auth, client):
     assert response.status_code == 404
 
 
-new_cb_dict = {"title": "t1", "year": "2000", "author": "a b", "type": "cookbook"}
-new_mag_dict = {"title": "t2", "year": "2001", "issue": "15 - 5", "type": "magazine"}
+new_cb_dict = {"title": "t1", "year": 2000, "author": "a b", "type": "cookbook"}
+new_mag_dict = {"title": "t2", "year": 2001, "issue": "15 - 5", "type": "magazine"}
 
 
 def test_create_cookbook(auth, client):
@@ -109,6 +109,16 @@ def test_create_cookbook_fails_on_missing_type(auth, client):
     assert response.status_code == 400
 
 
+def test_create_cookbook_fails_on_wrong_type(auth, client):
+    auth.login()
+    test_data = {**new_cb_dict, "type": "something stupid"}
+    response = client.post(
+        "/api/1/books", json=test_data, headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 400
+
+
 def test_create_cookbook_fails_on_missing_login(client):
     test_data = {k: new_cb_dict[k] for k in ["year", "author", "title"]}
     response = client.post("/api/1/books", json=test_data)
@@ -156,7 +166,7 @@ def test_update_magazine(books, auth, client):
     assert data["_links"] == books.book_2["_links"]
 
 
-def test_update_book_of_another_user(books, auth, client):
+def test_update_book_of_another_user_fails(books, auth, client):
     auth.login()
 
     response = client.put(
@@ -168,7 +178,7 @@ def test_update_book_of_another_user(books, auth, client):
     assert response.status_code == 404
 
 
-def test_update_book_not_existing_id(auth, client):
+def test_update_book_fails_on_not_existing_id(auth, client):
     auth.login()
 
     response = client.put(
@@ -178,6 +188,48 @@ def test_update_book_not_existing_id(auth, client):
     )
 
     assert response.status_code == 404
+
+
+def test_update_book_fails_on_missing_type(auth, client, books):
+    auth.login()
+
+    data = {**updated_dict}.pop("type")
+
+    response = client.put(
+        "api/1/books/{}".format(books.book_1["id"]),
+        json=data,
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_book_fails_on_missing_title(auth, client, books):
+    auth.login()
+
+    data = {**updated_dict}.pop("title")
+
+    response = client.put(
+        "api/1/books/{}".format(books.book_1["id"]),
+        json=data,
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_book_fails_on_wrong_type(auth, client, books):
+    auth.login()
+
+    data = {**updated_dict, "type": "blahblah"}
+
+    response = client.put(
+        "api/1/books/{}".format(books.book_1["id"]),
+        json=data,
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 400
 
 
 def test_delete_book(books, auth, app, client):

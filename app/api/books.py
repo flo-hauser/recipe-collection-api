@@ -39,7 +39,10 @@ def create_book():
 
     db.session.commit()
 
-    return jsonify(book.to_dict())
+    response = jsonify(book.to_dict())
+    response.status_code = 201
+
+    return response
 
 
 @bp.route("/books", methods=["GET"])
@@ -102,10 +105,6 @@ def update_book(book_id):
         book.author = data.get("author")
     elif data["type"] == "magazine":
         book.issue = data.get("issue")
-    else:
-        return bad_request(
-            "type must be one of {}".format(url_for("api.get_book_types"))
-        )
 
     db.session.add(book)
     db.session.commit()
