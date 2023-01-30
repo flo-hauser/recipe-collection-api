@@ -41,6 +41,7 @@ def create_book():
 
     response = jsonify(book.to_dict())
     response.status_code = 201
+    response.content_location = url_for("api.get_book", book_id=book.id)
 
     return response
 

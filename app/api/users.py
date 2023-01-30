@@ -44,6 +44,7 @@ def create_user():
 
     response = jsonify(user.to_dict())
     response.status_code = 201
+    response.content_location = url_for("api.get_user", id=user.id)
 
     return response
 
