@@ -29,3 +29,4 @@ coverage.*
 
 # Database
 *.db
+!env.py
