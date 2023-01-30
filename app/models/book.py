@@ -1,3 +1,4 @@
+from flask import url_for
 from app.extensions import db
 
 
@@ -10,10 +11,12 @@ class Book(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     # Relationships
-    recipes = db.relationship("Recipe", back_populates="book")
+    recipes = db.relationship(
+        "Recipe", back_populates="book", cascade="all, delete-orphan"
+    )
 
     __mapper_args__ = {
-        "polymorphic_identity": "person",
+        "polymorphic_identity": "book",
         "polymorphic_on": type,
     }
 
@@ -21,6 +24,24 @@ class Book(db.Model):
         for field in ["title", "type", "year"]:
             if field in data:
                 setattr(self, field, data[field])
+
+    def to_dict(self):
+        data = {
+            "id": self.id,
+            "title": self.title,
+            "type": self.type,
+            "year": self.year,
+            "_links": {
+                "self": url_for("api.get_book", book_id=self.id),
+                "recipes": "/api/1/TODO",
+                "user": url_for("api.get_user", id=self.user_id),
+            },
+        }
+        return data
+
+    @classmethod
+    def get_type(cls):
+        return cls.__mapper_args__["polymorphic_identity"]
 
 
 class Magazine(Book):
@@ -35,6 +56,11 @@ class Magazine(Book):
             if field in data:
                 setattr(self, field, data[field])
 
+    def to_dict(self):
+        data = {**super().to_dict(), "issue": self.issue}
+
+        return data
+
 
 class Cookbook(Book):
     id = db.Column(db.ForeignKey("book.id"), primary_key=True)
@@ -47,3 +73,8 @@ class Cookbook(Book):
         for field in ["author"]:
             if field in data:
                 setattr(self, field, data[field])
+
+    def to_dict(self):
+        data = {**super().to_dict(), "author": self.author}
+
+        return data

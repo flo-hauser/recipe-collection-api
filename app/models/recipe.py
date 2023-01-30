@@ -8,7 +8,7 @@ class Recipe(db.Model):
     image_path = db.Column(db.String())
 
     # Relationships
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    book_id = db.Column(db.Integer, db.ForeignKey("book.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
     book = db.relationship("Book", back_populates="recipes")

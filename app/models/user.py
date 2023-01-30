@@ -18,8 +18,8 @@ class User(db.Model):
 
     # Relationships
     roles = db.relationship("Role", secondary=user_roles)
-    recipes = db.relationship("Recipe")
-    books = db.relationship("Book")
+    recipes = db.relationship("Recipe", cascade="all, delete-orphan")
+    books = db.relationship("Book", cascade="all, delete-orphan")
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
