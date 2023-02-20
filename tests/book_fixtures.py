@@ -4,6 +4,14 @@ from app.models.book import Book, Cookbook, Magazine
 
 
 class BookFixtures:
+    """Sets up Book Fixtures
+    expects 'user_1' and 'user_2' to be present (general app fixtures)
+    book_1 - type: cookbook, user: user_1
+    book_2 - type: magazine, user: user_1
+    book_3 - type: cookbook, user: user_2
+    book_4 - type: magazine, user: user_2
+    """
+
     def __init__(self, app):
         self._app = app
 
