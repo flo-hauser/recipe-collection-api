@@ -3,6 +3,7 @@ from app import create_app
 from config import TestConfig
 from tests.auth_actions import AuthActions
 from tests.book_fixtures import BookFixtures
+from tests.recipe_fixtures import RecipeFixtures
 from app.extensions import db
 from app.models.role import Role
 from app.models.user import User
@@ -66,3 +67,8 @@ def auth(app, client):
 @pytest.fixture
 def books(app):
     return BookFixtures(app)
+
+
+@pytest.fixture
+def recipes(app):
+    return RecipeFixtures(app)

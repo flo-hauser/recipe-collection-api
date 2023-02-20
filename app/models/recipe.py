@@ -1,3 +1,4 @@
+from flask import url_for
 from app.extensions import db
 
 
@@ -12,3 +13,23 @@ class Recipe(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
 
     book = db.relationship("Book", back_populates="recipes")
+    user = db.relationship("User", back_populates="recipes")
+
+    def from_dict(self, data):
+        for field in ["title", "page", "image_path"]:
+            if field in data:
+                setattr(self, field, data[field])
+
+    def to_dict(self):
+        data = {
+            "id": self.id,
+            "title": self.title,
+            "page": self.page,
+            "image_path": self.image_path,
+            "_links": {
+                # "self": url_for("api.get_recipe", recipe_id=self.id),
+                "user": url_for("api.get_user", id=self.user_id),
+                "book": url_for("api.get_book", book_id=self.book_id),
+            },
+        }
+        return data
