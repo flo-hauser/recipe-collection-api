@@ -120,8 +120,7 @@ def test_create_cookbook_fails_on_wrong_type(auth, client):
 
 
 def test_create_cookbook_fails_on_missing_login(client):
-    test_data = {k: new_cb_dict[k] for k in ["year", "author", "title"]}
-    response = client.post("/api/1/books", json=test_data)
+    response = client.post("/api/1/books", json=new_cb_dict)
 
     assert response.status_code == 401
 
