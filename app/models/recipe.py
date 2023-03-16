@@ -27,7 +27,7 @@ class Recipe(db.Model):
             "page": self.page,
             "image_path": self.image_path,
             "_links": {
-                # "self": url_for("api.get_recipe", recipe_id=self.id),
+                "self": url_for("api.get_recipe", recipe_id=self.id),
                 "user": url_for("api.get_user", id=self.user_id),
                 "book": url_for("api.get_book", book_id=self.book_id),
             },
