@@ -18,6 +18,14 @@ def get_user(id):
 
     return jsonify(User.query.get_or_404(id).to_dict(include_email=include_email))
 
+@bp.route("/users/me", methods=["GET"])
+@token_auth.login_required
+def get_self():
+    requesting_user = token_auth.current_user()
+    include_email = True
+
+    return jsonify(requesting_user.to_dict(include_email=include_email))
+
 
 @bp.route("/users", methods=["GET"])
 @token_auth.login_required(role="admin")
