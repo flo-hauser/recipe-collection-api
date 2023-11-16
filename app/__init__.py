@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from config import Config
 from app.cli import register_cli
 
@@ -10,6 +11,7 @@ def create_app(config_class=Config):
     # Create App and Config
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
+    CORS(app)
 
     # Initialize Flask extensions
     db.init_app(app)
