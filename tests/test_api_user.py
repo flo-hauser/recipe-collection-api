@@ -76,6 +76,21 @@ def test_get_user(client, auth):
     assert "roles" in res_data
     assert "self" in res_data["_links"]
 
+def test_get_self(client, auth):
+    auth.login()
+
+    response = client.get(
+        "/api/1/users/me", headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data["username"] == auth.user.username
+    assert res_data["id"] == auth.user.id
+    assert res_data["email"] == auth.user.email
+    assert "roles" in res_data
+    assert "self" in res_data["_links"]
 
 def test_get_user_as_another_user(client, auth):
     auth.login()
