@@ -8,7 +8,7 @@ def heathy_status():
     healthy = True
 
     try:
-        result = db.session.execute("SELECT 1").fetchone()
+        result = db.session.execute(db.select(db.text("1"))).fetchone()
         assert result == (1,)
     except Exception as e:
         healthy = False
