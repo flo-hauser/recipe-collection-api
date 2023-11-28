@@ -15,6 +15,8 @@ class User(db.Model):
 
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+    refresh_token = db.Column(db.String(32), index=True, unique=True)
+    refresh_token_expiration = db.Column(db.DateTime)
 
     # Relationships
     roles = db.relationship("Role", secondary=user_roles)
@@ -52,9 +54,10 @@ class User(db.Model):
             data["email"] = self.email
         return data
 
-    def get_token(self, expires_in=3600):
+    def get_token(self, expires_in=3600, forceNew=False):
         now = datetime.utcnow()
-        if self.token and self.token_expiration > now + timedelta(seconds=60):
+
+        if (self.token and self.token_expiration > now + timedelta(seconds=60)) and not forceNew:
             return self.token
 
         self.token = secrets.token_hex(64)
@@ -71,9 +74,28 @@ class User(db.Model):
             return liftetime.seconds
         else:
             return 0
+    
+    def get_refresh_token(self, expires_in=100):
+        now = datetime.utcnow()
+
+        self.refresh_token = secrets.token_hex(64)
+        self.refresh_token_expiration = now + timedelta(days=100)
+
+        db.session.add(self)
+        db.session.commit()
+
+        return self.refresh_token
+    
+    def get_refresh_token_lifetime(self):
+        if self.refresh_token_expiration:
+            liftetime = self.token_expiration - datetime.utcnow()
+            return liftetime.seconds
+        else:
+            return 0
 
     def revoke_token(self):
         self.token_expiration = datetime.utcnow() - timedelta(seconds=120)
+        self.refresh_token_expiration = datetime.utcnow() - timedelta(seconds=120)
 
         db.session.add(self)
         db.session.commit()
