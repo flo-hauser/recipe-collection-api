@@ -22,7 +22,7 @@ def get_token():
     refresh_token = user.get_refresh_token()
 
     response = jsonify(token_data)
-    response.set_cookie(REFRESH_TOKEN, refresh_token, None, user.refresh_token_expiration, samesite="lax", domain=None, httponly=True)
+    response.set_cookie(REFRESH_TOKEN, refresh_token, None, user.refresh_token_expiration, samesite="Lax", domain=None, httponly=True, secure=True)
     return response
 
 
