@@ -18,6 +18,35 @@ def get_user(id):
 
     return jsonify(User.query.get_or_404(id).to_dict(include_email=include_email))
 
+@bp.route("/users/search/match", methods=["GET"])
+@token_auth.login_required
+def search_user():
+    username = request.args.get("username")
+    email = request.args.get("email")
+
+    if (username):
+        user = User.query.filter_by(username=username).first_or_404()
+    elif (email):
+        user = User.query.filter_by(email=email).first_or_404()
+    else:
+        user = User.query.filter_by(id=-1).first_or_404()
+    return jsonify(user.to_dict(include_email=False))
+
+@bp.route("/users/exists", methods=["GET"])
+def search_user_exists():
+    username = request.args.get("username")
+    email = request.args.get("email")
+
+    if (username):
+        user = User.query.filter_by(username=username).first()
+    elif (email):
+        user = User.query.filter_by(email=email).first()
+    else:
+        user = User.query.filter_by(id=-1).first()
+    if user:
+        return jsonify(True)
+    return jsonify(False)
+
 @bp.route("/users/me", methods=["GET"])
 @token_auth.login_required
 def get_self():

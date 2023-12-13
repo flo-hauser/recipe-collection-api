@@ -63,7 +63,7 @@ Coverage and coverage reports are made with [Coverage.py](https://coverage.readt
 coverage run -m pytest && coverage report
 ```
 
-User in CI/CD with quality gates (here 90% overall):
+Usage in CI/CD with quality gates (here 90% overall):
 
 ```sh
 coverage run -m pytest

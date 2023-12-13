@@ -92,6 +92,118 @@ def test_get_self(client, auth):
     assert "roles" in res_data
     assert "self" in res_data["_links"]
 
+def test_search_user_match_by_name(client, auth):
+    auth.login()
+
+    response = client.get(
+        "/api/1/users/search/match",
+        headers=auth.token_auth_header,
+        query_string = {"username": "user_1"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data["username"] == "user_1"
+    assert "id" in res_data
+    assert "email" not in res_data
+    assert "roles" in res_data
+    assert "self" in res_data["_links"]
+
+def test_search_user_match_by_email(client, auth):
+    auth.login()
+
+    response = client.get(
+        "/api/1/users/search/match",
+        headers=auth.token_auth_header,
+        query_string = {"email": "user_1@example.com"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data["username"] == "user_1"
+    assert "id" in res_data
+    assert "email" not in res_data
+    assert "roles" in res_data
+    assert "self" in res_data["_links"]
+
+def test_search_user_match_by_name_404(client, auth):
+    auth.login()
+
+    response = client.get(
+        "/api/1/users/search/match",
+        headers=auth.token_auth_header,
+        query_string = {"username": "no user"}
+    )
+
+    assert response.status_code == 404
+
+def test_search_user_match_by_email_404(client, auth):
+    auth.login()
+
+    response = client.get(
+        "/api/1/users/search/match",
+        headers=auth.token_auth_header,
+        query_string = {"email": "no@mail.com"}
+    )
+
+    assert response.status_code == 404
+
+def test_search_user_match_not_logged_in(client, auth):
+    response = client.get(
+        "/api/1/users/search/match",
+        query_string = {"username": "user_1"}
+    )
+
+    assert response.status_code == 401
+
+def test_search_user_exists_by_name(client, auth):
+    response = client.get(
+        "/api/1/users/exists",
+        headers=auth.token_auth_header,
+        query_string = {"username": "user_1"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data == True
+
+    response = client.get(
+        "/api/1/users/exists",
+        headers=auth.token_auth_header,
+        query_string = {"username": "user_xx"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data == False
+
+def test_search_user_exists_by_email(client, auth):
+    response = client.get(
+        "/api/1/users/exists",
+        headers=auth.token_auth_header,
+        query_string = {"email": "user_1@example.com"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data == True
+
+    response = client.get(
+        "/api/1/users/exists",
+        headers=auth.token_auth_header,
+        query_string = {"email": "no@mail.com"}
+    )
+
+    assert response.status_code == 200
+
+    res_data = response.json
+    assert res_data == False
+
 def test_get_user_as_another_user(client, auth):
     auth.login()
 
