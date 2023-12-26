@@ -11,7 +11,7 @@ def test_get_all_recipes(client, auth, books, recipes):
     response = client.get("api/1/recipes", headers=auth.token_auth_header)
 
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 5
 
     for r in response.json:
         # only own books
@@ -105,3 +105,31 @@ def test_create_recipe_fails_on_missing_login(client):
     response = client.post("/api/1/books", json=new_recipe_dict)
 
     assert response.status_code == 401
+
+def test_search_recipe(client, auth, books, recipes):
+    auth.login()
+
+    response = client.get(
+        "api/1/recipes/search",
+        headers=auth.token_auth_header,
+        query_string = {"q": "rezept"}
+    )
+
+    assert response.status_code == 200
+    data = response.json
+
+    assert len(data) == 2
+
+def test_search_recipe_only_own_recipes(client, auth, books, recipes):
+    auth.login()
+
+    response = client.get(
+        "api/1/recipes/search",
+        headers=auth.token_auth_header,
+        query_string = {"q": "title"}
+    )
+
+    assert response.status_code == 200
+    data = response.json
+
+    assert len(data) == 3

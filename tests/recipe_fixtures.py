@@ -56,6 +56,20 @@ class RecipeFixtures:
             r_3.page = 4
             r_3.image_path = "/some/uri/457"
 
+            r_3_1 = Recipe()
+            r_3_1.book = book_2
+            r_3_1.user = user_1
+            r_3_1.title = "ein rezept titel"
+            r_3_1.page = 4
+            r_3_1.image_path = "/some/uri/457"
+
+            r_3_2 = Recipe()
+            r_3_2.book = book_2
+            r_3_2.user = user_1
+            r_3_2.title = "noch ein rezept"
+            r_3_2.page = 4
+            r_3_2.image_path = "/some/uri/457"
+
             r_4 = Recipe()
             r_4.book = book_3
             r_4.user = user_2
@@ -66,10 +80,14 @@ class RecipeFixtures:
             db.session.add(r_1)
             db.session.add(r_2)
             db.session.add(r_3)
+            db.session.add(r_3_1)
+            db.session.add(r_3_2)
             db.session.add(r_4)
             db.session.commit()
 
             self.recipe_1 = r_1.to_dict()
             self.recipe_2 = r_2.to_dict()
             self.recipe_3 = r_3.to_dict()
+            self.recipe_3_1 = r_3_1.to_dict()
+            self.recipe_3_2 = r_3_2.to_dict()
             self.recipe_4 = r_4.to_dict()
