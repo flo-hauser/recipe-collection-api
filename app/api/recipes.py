@@ -80,7 +80,7 @@ def search_recipe():
     search_term = request.args.get("q")
 
     if not search_term:
-        recipes = []
+        query = db.select(Recipe).join(User.recipes).where(User.id == user.id)
     else:
         query = (
             db.select(Recipe)
@@ -88,6 +88,6 @@ def search_recipe():
             .where(User.id == user.id)
             .where(Recipe.title.contains(search_term))
         )
-        recipes = db.session.execute(query).scalars().all()
-        
+    recipes = db.session.execute(query).scalars().all()
+
     return jsonify([recipe.to_dict() for recipe in recipes])
