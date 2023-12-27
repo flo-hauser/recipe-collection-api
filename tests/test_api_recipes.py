@@ -133,3 +133,26 @@ def test_search_recipe_only_own_recipes(client, auth, books, recipes):
     data = response.json
 
     assert len(data) == 3
+
+
+def test_update_recipe(client, auth, books, recipes):
+    auth.login()
+
+    updateData = {
+        "id": recipes.recipe_1["id"],
+        "title": "Updated Title",
+        "page": 999,
+        "book_id": str(books.book_2["id"])
+    }
+
+    response = client.put(
+        "api/1/recipes/{}".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        json=updateData
+    )
+
+    assert response.status_code == 200
+    data = response.json
+    assert data["title"] == updateData["title"]
+    assert data["page"] == updateData["page"]
+    assert data["_links"]["book"][-1] == updateData["book_id"]

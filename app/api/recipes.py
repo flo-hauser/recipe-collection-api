@@ -91,3 +91,40 @@ def search_recipe():
     recipes = db.session.execute(query).scalars().all()
 
     return jsonify([recipe.to_dict() for recipe in recipes])
+
+
+@bp.route("/recipes/<int:recipe_id>", methods=["PUT"])
+@token_auth.login_required
+def update_recipe(recipe_id):
+    user: User = token_auth.current_user()
+    data = request.get_json() or {}
+
+    if not "book_id" in data:
+        return bad_request("book_id must be set")
+    if not "title" in data or not data["title"]:
+        return bad_request("title must be set and a not empty string")
+
+    # Get referenced Book
+    select_book = db.select(Book).where(Book.id == data["book_id"])
+    book = db.session.execute(select_book).scalars().one_or_none()
+    if not book:
+        abort(404)
+    
+    # Get existing Recipe
+    result = db.session.execute(
+        db.select(Recipe)
+        .join(User.recipes)
+        .where(Recipe.id == recipe_id)
+        .where(User.id == user.id)
+    )
+    recipe: Recipe = result.scalars().one_or_none()
+    if not recipe:
+        abort(404)
+
+    recipe.from_dict(data)
+    recipe.book = book
+
+    db.session.add(recipe)
+    db.session.commit()
+
+    return jsonify(recipe.to_dict())
