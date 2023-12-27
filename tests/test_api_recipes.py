@@ -139,7 +139,6 @@ def test_update_recipe(client, auth, books, recipes):
     auth.login()
 
     updateData = {
-        "id": recipes.recipe_1["id"],
         "title": "Updated Title",
         "page": 999,
         "book_id": str(books.book_2["id"])
@@ -156,3 +155,40 @@ def test_update_recipe(client, auth, books, recipes):
     assert data["title"] == updateData["title"]
     assert data["page"] == updateData["page"]
     assert data["_links"]["book"][-1] == updateData["book_id"]
+
+def test_update_recipe_of_another_user_fails(client, auth, books, recipes):
+    auth.login()
+
+    updateData = {
+        "title": "Updated Title",
+        "page": 999,
+        "book_id": str(books.book_2["id"])
+    }
+
+    response = client.put(
+        "api/1/recipes/{}".format(recipes.recipe_4["id"]),
+        headers=auth.token_auth_header,
+        json=updateData
+    )
+
+    assert response.status_code == 404
+
+def test_delete_recipe(client, auth, books, recipes):
+    auth.login()
+
+    response = client.delete(
+        "api/1/recipes/{}".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 204
+
+def test_delete_recipe_of_another_user(client, auth, books, recipes):
+    auth.login()
+
+    response = client.delete(
+        "api/1/recipes/{}".format(recipes.recipe_4["id"]),
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 404

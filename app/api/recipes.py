@@ -128,3 +128,26 @@ def update_recipe(recipe_id):
     db.session.commit()
 
     return jsonify(recipe.to_dict())
+
+@bp.route("/recipes/<int:recipe_id>", methods=["DELETE"])
+@token_auth.login_required
+def delete_recipe(recipe_id):
+    user: User = token_auth.current_user()
+
+    # Get existing Recipe
+    result = db.session.execute(
+        db.select(Recipe)
+        .join(User.recipes)
+        .where(Recipe.id == recipe_id)
+        .where(User.id == user.id)
+    )
+    recipe: Recipe = result.scalars().one_or_none()
+    if not recipe:
+        abort(404)
+
+    result = db.session.execute(db.delete(Recipe).where(Recipe.id == recipe_id))
+    if not result.rowcount == 1:
+        abort(500)
+    db.session.commit()
+
+    return "", 204
