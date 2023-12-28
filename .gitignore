@@ -30,3 +30,9 @@ coverage.*
 # Database
 *.db
 !env.py
+
+# dev images
+images/*
+
+# gitkeep empty folders
+!.gitkeep

@@ -12,6 +12,10 @@ class Config:
     ) or "sqlite:///" + os.path.join(basedir, "app.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER") or "images"
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+    MAX_CONTENT_LENGTH = 8 * 1000 * 1000
+
 
 class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///"
