@@ -7,6 +7,7 @@ from flask import jsonify, request, abort, current_app
 from app.api.auth import token_auth
 from werkzeug.utils import secure_filename
 from uuid import uuid4
+from PIL import Image, ImageOps
 import os
 
 
@@ -30,20 +31,38 @@ def put_image(recipe_id):
         abort(404)
 
     # File Handling
-    if "file" not in request.files:
+    if "image" not in request.files:
         abort(400)
-    file = request.files["file"]
+    file = request.files["image"]
     if not allowed_file(file.filename):
         abort(400)
-    unique_filename = str(uuid4()).replace("-", "") + "." + file.filename.rsplit(".", 1)[1]
-    full_filename = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-    file.save(full_filename)
 
-    # Delete old File
+    # Image Validation
+    with Image.open(file) as image:
+        if not image.format in current_app.config["ALLOWED_EXTENSIONS"]:
+            abort(400)
+        image_format = image.format
+
+
+    extension = image_format.lower().replace("jpeg", "jpg")
+    unique_filename = str(uuid4()).replace("-", "") + "." + extension
+    full_filename = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+    
+    # Resizing and save
+    with Image.open(file) as image:
+        ImageOps.fit(image, (1200, 800)).save(full_filename)
+
+    # Create thumbnail
+    with Image.open(full_filename) as image:
+        image.thumbnail((128, 128))
+        image.save(full_filename + ".thumbnail", image_format)
+
+    # Delete old Files
     if recipe.image:
         old_file = recipe.image
         try:
             os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file))
+            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file + ".thumbnail"))
         except:
             pass
             

@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER") or "images"
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "PNG", "JPG", "JPEG"}
     MAX_CONTENT_LENGTH = 8 * 1000 * 1000
 
 
