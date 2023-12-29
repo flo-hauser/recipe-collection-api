@@ -31,8 +31,11 @@ def test_get_recipe(client, auth, books, recipes):
 
     assert data["title"] == recipes.recipe_1["title"]
     assert data["page"] == recipes.recipe_1["page"]
-    assert data["image_path"] == recipes.recipe_1["image_path"]
+    assert data["image"] == recipes.recipe_1["image"]
     assert data["_links"] == recipes.recipe_1["_links"]
+    assert "image" in data["_links"]
+    assert "thumbnail" in data["_links"]
+    assert "self" in data["_links"]
 
 
 def test_get_recipe_of_another_user_404(books, auth, client, recipes):
@@ -65,7 +68,7 @@ def test_create_new_recipe(auth, client, books, recipes):
     assert "id" in res_data
     assert res_data["title"] == new_recipe_dict["title"]
     assert res_data["page"] == new_recipe_dict["page"]
-    assert "image_path" in res_data
+    assert "image" in res_data
     assert "_links" in res_data
     assert res_data["_links"]["book"][-1] == str(new_recipe_dict["book_id"])
 
