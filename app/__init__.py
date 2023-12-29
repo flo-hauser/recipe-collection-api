@@ -17,13 +17,16 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register Blueprints
-    from app.api import bp as api_bp
-
     # Custom CLI commands
     register_cli(app)
 
+    # Register Blueprints
+    from app.api import bp as api_bp
+    from app.image_server import bp as image_bp
+
     app.register_blueprint(api_bp, url_prefix="/api/1")
+    if app.config["DEBUG"] or app.config["TESTING"]:
+        app.register_blueprint(image_bp)
 
     return app
 
