@@ -30,8 +30,8 @@ class Recipe(db.Model):
                 "self": url_for("api.get_recipe", recipe_id=self.id),
                 "user": url_for("api.get_user", id=self.user_id),
                 "book": url_for("api.get_book", book_id=self.book_id),
-                "image": "/images/{}/{}".format(self.id, self.image),
-                "thumbnail": "/images/{}/{}.thumbnail".format(self.id, self.image)
+                "image": "/images/{}/{}".format(self.id, self.image) if self.image else None,
+                "thumbnail": "/images/{}/{}.thumbnail".format(self.id, self.image) if self.image else None,
             },
         }
         return data

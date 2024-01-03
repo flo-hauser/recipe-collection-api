@@ -655,6 +655,33 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+    delete:
+      summary: delete recipe image
+      description: delete recipe image by id
+      operationId: delete_image
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+      responses:
+        '200':
+          description: recipe deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
 components:
   securitySchemes:

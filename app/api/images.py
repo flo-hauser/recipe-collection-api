@@ -72,3 +72,34 @@ def put_image(recipe_id):
     db.session.commit()
 
     return jsonify(recipe.to_dict())
+
+@bp.route("recipes/<int:recipe_id>/image", methods=["DELETE"])
+@token_auth.login_required
+def delete_image(recipe_id):
+    user: User = token_auth.current_user()
+
+    result = db.session.execute(
+        db.select(Recipe)
+        .join(User.recipes)
+        .where(Recipe.id == recipe_id)
+        .where(User.id == user.id)
+    )
+    recipe: Recipe = result.scalars().one_or_none()
+    if not recipe:
+        abort(404)
+
+    # Try deleting old Files
+    if recipe.image:
+        old_file = recipe.image
+        try:
+            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file))
+            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file + ".thumbnail"))
+        except:
+            pass
+
+    # Always update DB
+    recipe.image = None
+    db.session.add(recipe)
+    db.session.commit()
+
+    return jsonify(recipe.to_dict())
