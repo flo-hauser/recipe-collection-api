@@ -448,6 +448,214 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /recipes:
+    post:
+      summary: create recipe
+      description: create recipe
+      operationId: create_recipe
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: recipe data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '201':
+          description: recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: get recipes
+      description: get all own recipes
+      operationId: get_all_recipes
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /recipes/{recipe_id}:
+    get:  
+      summary: get recipe
+      description: get recipe by id
+      operationId: get_recipe
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+      responses:
+        '200':
+          description: recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      summary: update recipe
+      description: update recipe by id
+      operationId: update_recipe
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+      requestBody:
+        description: recipe data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '200':
+          description: recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      summary: delete recipe
+      description: delete recipe by id
+      operationId: delete_recipe
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+      responses:
+        '204':
+          description: recipe deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /recipes/search:
+    get:
+      summary: search recipes
+      description: search recipes by title
+      operationId: search_recipes
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /recipes/{recipe_id}/image:
+    put:
+      summary: update recipe image
+      description: update recipe image by id
+      operationId: put_image
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+      requestBody:
+        description: image data
+        required: true
+        content:
+          form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
 components:
   securitySchemes:
     basicAuth:
@@ -544,6 +752,20 @@ components:
               type: string
               format: uri
               description: link to thumbnail
+    RecipeInput:
+      type: object
+      properties:
+        title:
+          type: string
+        page:
+          type: integer
+          format: int32
+        image:
+          type: string
+          format: uri
+        book_id:
+          type: integer
+          format: int32
     User:
       type: object
       properties:
