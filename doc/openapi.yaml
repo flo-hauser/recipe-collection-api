@@ -1,0 +1,636 @@
+openapi: 3.0.2
+info:
+  title: recipe collectio api
+  version: 1.0.0
+  description: a simple recipe collection api
+servers:
+  - url: http://127.0.0.1:5000/api/1
+    description: local development server
+
+tags:
+  - name: recipes
+    description: operations on recipes
+  - name: tokens
+    description: operations on tokens
+  - name: books
+    description: operations on books
+  - name: general
+    description: general operations 
+  - name: users
+    description: operations on users
+
+paths:
+  /healthy:
+    get:
+      summary: check health
+      description: check health of api
+      operationId: heathy_status
+      tags:
+        - general
+      responses:
+        '200':
+          description: healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  healthy:
+                    type: boolean
+                    example: true
+
+  /tokens:
+    get:
+      summary: get a token
+      description: get a token for authentication
+      operationId: get_token
+      tags:
+        - tokens
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  token_expiration:
+                    type: string
+                    format: date-time
+                  token_lifetime:
+                    type: integer
+                    format: int32
+                    description: token lifetime in seconds
+          headers:
+            Set-Cookie:
+              description: cookie with refresh token
+              schema:
+                type: string
+                example: refresh_token=longtokenstring; Expires=Fri, 12 Apr 2024 06:36:37 GMT; Secure; HttpOnly; Path=/; SameSite=Lax
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      summary: logout
+      description: revoke current token
+      operationId: revoke_token
+      tags:
+        - tokens
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: token deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        
+  /tokens/refresh:
+    get:
+      summary: get a refresh token
+      description: get a new refresh token
+      operationId: refresh_token
+      tags:
+        - tokens
+      security:
+        - cookieAuth: []      
+      responses:
+        '200':
+          description: token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  token_expiration:
+                    type: string
+                    format: date-time
+                  token_lifetime:
+                    type: integer
+                    format: int32
+                    description: token lifetime in seconds
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  
+  /users/{user_id}:
+    get:
+      summary: get user
+      description: get user by id
+      operationId: get_user
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user id
+      responses:
+        '200':
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: update user
+      description: update user by id
+      operationId: update_user
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user id
+      requestBody:
+        description: user data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '200':
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /users/me:
+    get:
+      summary: get current user
+      description: get current user
+      operationId: get_current_user
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /users:
+    get:
+      summary: get users
+      description: get all users (admin only)
+      operationId: get_users
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      summary: create user
+      description: create user
+      operationId: create_user
+      tags:
+        - users
+      requestBody:
+        description: user data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '201':
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+
+  /users/search/match:
+    get:
+      summary: search users
+      description: search users by username or email
+      operationId: search_user
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+        - in: query
+          name: email
+          schema:
+            type: string
+      responses:
+        '200':
+          description: users
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+  /users/exists:
+    get:
+      summary: check if user exists
+      description: check if user exists by username or email
+      operationId: search_user_exists
+      tags:
+        - users
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+        - in: query
+          name: email
+          schema:
+            type: string
+      responses:
+        '200':
+          description: user exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+
+  /books:
+    post:
+      summary: create book
+      description: create book
+      operationId: create_book
+      tags:
+        - books
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: book data
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Cookbook'
+                - $ref: '#/components/schemas/Magazine'
+      responses:
+        '201':
+          description: book
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Cookbook'
+                  - $ref: '#/components/schemas/Magazine'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: get books
+      description: get all own books
+      operationId: get_all_books
+      tags:
+        - books
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/Cookbook'
+                    - $ref: '#/components/schemas/Magazine'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /books/{book_id}:
+    get:
+      summary: get book
+      description: get book by id
+      operationId: get_book
+      tags:
+        - books
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: book_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: book id
+      responses:
+        '200':
+          description: book
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Cookbook'
+                  - $ref: '#/components/schemas/Magazine'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:  
+      summary: update book
+      description: update book by id
+      operationId: update_book
+      tags:
+        - books
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: book_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: book id
+      requestBody:
+        description: book data
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Cookbook'
+                - $ref: '#/components/schemas/Magazine'
+      responses:
+        '200':
+          description: book
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Cookbook'
+                  - $ref: '#/components/schemas/Magazine'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete: 
+      summary: delete book
+      description: delete book by id
+      operationId: delete_book
+      tags:
+        - books
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: book_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: book id
+      responses:
+        '204':
+          description: book deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: string
+  
+  responses:
+    BadRequestError:
+      description: bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: bad request
+    UnauthorizedError:
+      description: not authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: not authorized
+    ForbiddenError:
+      description: forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Access Frobidden
+    NotFoundError:
+      description: not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Resource not found
+
+  schemas:
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          format: int32
+        title:
+          type: string
+        page:
+          type: integer
+          format: int32
+        image:
+          type: string
+          format: uri
+        _links:
+          type: object
+          readOnly: true
+          properties:
+            self:
+              type: string
+              format: uri
+              description: link to recipe
+            user:
+              type: string
+              format: uri
+              description: link to user
+            book:
+              type: string
+              format: uri
+              description: link to book
+            image:
+              type: string
+              format: uri
+              description: link to image
+            thumbnail:
+              type: string
+              format: uri
+              description: link to thumbnail
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          readOnly: true
+        username:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          readOnly: true
+          items:
+            type: string
+            anyOf:
+              - enum:
+                  - admin
+                  - user
+        _links:
+          type: object
+          readOnly: true
+          properties:
+            self:
+              type: string
+              description: link to user
+    UserInput:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          readOnly: true
+        title:
+          type: string
+        type:
+          type: string
+          enum:
+            - cookbook
+            - magazine
+        year:
+          type: integer
+          format: int32
+        _links:
+          type: object
+          readOnly: true
+          properties:
+            self:
+              type: string
+              description: link to book
+            user:
+              type: string
+              description: link to user
+            recipes:
+              type: string
+              description: link to recipes
+    Cookbook:
+      allOf:
+        - $ref: '#/components/schemas/Book'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - cookbook
+            author:
+              type: string
+    Magazine:
+      allOf:
+        - $ref: '#/components/schemas/Book'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - magazine
+            issue:
+              type: integer
+              format: int32
+       
