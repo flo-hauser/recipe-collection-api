@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.models.user import User
-from app.models.book import Book, Cookbook, Magazine
+from app.models.book import Cookbook, Magazine
 
 
 class BookFixtures:
