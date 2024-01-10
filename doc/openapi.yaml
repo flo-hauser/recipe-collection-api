@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  title: recipe collectio api
-  version: 1.0.0
-  description: a simple recipe collection api
+  title: recipe collection api
+  version: 1.1.0
+  description: backend service for recipe collection app
 servers:
   - url: http://127.0.0.1:5000/api/1
     description: local development server
@@ -683,6 +683,44 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /recipes/{recipe_id}/rating:
+    put:
+      summary: update recipe rating
+      description: update recipe rating by id
+      operationId: put_rating
+      tags:
+        - recipes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recipe_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: recipe id
+        - in: query
+          name: rating
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          required: true
+      responses:
+        '200':
+          description: recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
 components:
   securitySchemes:
     basicAuth:
@@ -755,6 +793,12 @@ components:
         image:
           type: string
           format: uri
+        rating:
+          description: average rating from 1 to 5
+          type: number
+          format: float
+          minimum: 1
+          maximum: 5
         _links:
           type: object
           readOnly: true
