@@ -195,3 +195,51 @@ def test_delete_recipe_of_another_user(client, auth, books, recipes):
     )
 
     assert response.status_code == 404
+
+def test_recipe_rating(client, auth, books, recipes):
+    auth.login()
+
+    response = client.put(
+        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        query_string={"rating": 3}
+    )
+
+    assert response.status_code == 200
+    data = response.json
+    assert data["rating"] == 3.0
+
+def test_recipe_rating_of_another_user(client, auth, books, recipes):
+    auth.login()
+
+    response = client.put(
+        "api/1/recipes/{}/rating".format(recipes.recipe_4["id"]),
+        headers=auth.token_auth_header,
+        query_string={"rating": 3}
+    )
+
+    assert response.status_code == 404
+
+def test_recipe_rating_invalid_rating(client, auth, books, recipes):
+    auth.login()
+
+    response = client.put(
+        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        query_string={"rating": 6}
+    )
+    assert response.status_code == 400
+
+    response = client.put(
+        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        query_string={"rating": "abc"}
+    )
+    assert response.status_code == 400
+
+    response = client.put(
+        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        query_string={"another_query": 3}
+    )
+    assert response.status_code == 400

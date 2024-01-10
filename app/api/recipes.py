@@ -3,6 +3,7 @@ from app.api.errors import bad_request
 from app.models.user import User
 from app.models.recipe import Recipe
 from app.models.book import Book
+from app.models.rating import Rating
 from app.extensions import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
@@ -109,7 +110,7 @@ def update_recipe(recipe_id):
     book = db.session.execute(select_book).scalars().one_or_none()
     if not book:
         abort(404)
-    
+
     # Get existing Recipe
     result = db.session.execute(
         db.select(Recipe)
@@ -128,6 +129,7 @@ def update_recipe(recipe_id):
     db.session.commit()
 
     return jsonify(recipe.to_dict())
+
 
 @bp.route("/recipes/<int:recipe_id>", methods=["DELETE"])
 @token_auth.login_required
@@ -151,3 +153,56 @@ def delete_recipe(recipe_id):
     db.session.commit()
 
     return "", 204
+
+
+@bp.route("/recipes/<int:recipe_id>/rating", methods=["PUT"])
+@token_auth.login_required
+def rate_recipe(recipe_id):
+    user: User = token_auth.current_user()
+    rating = request.args.get("rating")
+
+    # Validate rating
+    if not rating:
+        return bad_request("rating must be set")
+    try:
+        rating = int(rating)
+    except ValueError:
+        return bad_request("rating must be an integer between 1 and 5")
+    if not 1 <= rating <= 5:
+        return bad_request("rating must be an integer between 1 and 5")
+
+    # Get existing Recipe
+    result = db.session.execute(
+        db.select(Recipe)
+        .join(User.recipes)
+        .where(Recipe.id == recipe_id)
+        .where(User.id == user.id)
+    )
+    recipe: Recipe = result.scalars().one_or_none()
+    if not recipe:
+        abort(404)
+
+    # Get existing Rating
+    r: Rating = (
+        db.session.execute(
+            db.select(Rating)
+            .where(Rating.recipe_id == recipe_id)
+            .where(Rating.user_id == user.id)
+        )
+        .scalars()
+        .one_or_none()
+    )
+
+    if r:
+        r.rating = rating
+    # Create new Rating
+    else:
+        r = Rating()
+        r.rating = rating
+        r.user = user
+        r.recipe = recipe
+
+    db.session.add(r)
+    db.session.commit()
+
+    return jsonify(recipe.to_dict())

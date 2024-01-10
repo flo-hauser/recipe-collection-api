@@ -37,3 +37,4 @@ from app.models.recipe import Recipe
 from app.models.book import Book
 from app.models.book import Magazine
 from app.models.book import Cookbook
+from app.models.rating import Rating
