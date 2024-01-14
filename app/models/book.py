@@ -33,7 +33,7 @@ class Book(db.Model):
             "year": self.year,
             "_links": {
                 "self": url_for("api.get_book", book_id=self.id),
-                "recipes": "/api/1/TODO",
+                "recipes": [r.to_dict()["_links"]["self"] for r in self.recipes],
                 "user": url_for("api.get_user", id=self.user_id),
             },
         }

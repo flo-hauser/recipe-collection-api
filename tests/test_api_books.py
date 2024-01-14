@@ -36,6 +36,19 @@ def test_get_book(books, auth, client):
     assert data["author"] == books.book_1["author"]
     assert data["_links"] == books.book_1["_links"]
 
+def test_get_book_with_recipes(books, recipes, auth, client):
+    auth.login()
+
+    response = client.get(
+        "api/1/books/{}".format(books.book_1["id"]), headers=auth.token_auth_header
+    ) 
+
+    assert response.status_code == 200
+    data = response.json
+    assert len(data["_links"]["recipes"]) == 2
+    assert data["_links"]["recipes"][0] == recipes.recipe_1["_links"]["self"]
+    assert data["_links"]["recipes"][1] == recipes.recipe_2["_links"]["self"]
+
 
 def test_get_book_of_another_user_404(books, auth, client):
     auth.login()
