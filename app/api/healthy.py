@@ -10,7 +10,7 @@ def heathy_status():
     try:
         result = db.session.execute(db.select(db.text("1"))).fetchone()
         assert result == (1,)
-    except Exception as e:
+    except Exception:
         healthy = False
 
     return jsonify({"healthy": healthy})

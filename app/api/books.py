@@ -129,7 +129,7 @@ def delete_book(book_id):
         abort(404)
 
     result = db.session.execute(db.delete(Book).where(Book.id == book_id))
-    if not result.rowcount == 1:
+    if result.rowcount != 1:
         abort(500)
     db.session.commit()
 

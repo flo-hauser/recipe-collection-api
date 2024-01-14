@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, current_app
 from werkzeug.http import HTTP_STATUS_CODES
 from app import db
 from app.api import bp
@@ -27,7 +27,12 @@ def forbidden_error(status):
     return error_response(403, "Access Frobidden")
 
 
-# TODO strip out reasons for production
 @bp.app_errorhandler(500)
 def internal_error(error):
-    return error_response(500, error)
+    if current_app.config["DEBUG"] or current_app.config["TESTING"]:
+        db.session.rollback()
+        return error_response(500, error)
+    else:
+        db.session.rollback()
+        return error_response(500, "Internal Server Error")
+

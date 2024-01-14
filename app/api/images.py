@@ -8,6 +8,7 @@ from uuid import uuid4
 from PIL import Image, ImageOps
 import os
 
+THUMBNAIL = "{}.thumbnail"
 
 def allowed_file(filename):
     return "." in filename and \
@@ -37,7 +38,7 @@ def put_image(recipe_id):
 
     # Image Validation
     with Image.open(file) as image:
-        if not image.format in current_app.config["ALLOWED_EXTENSIONS"]:
+        if image.format not in current_app.config["ALLOWED_EXTENSIONS"]:
             abort(400)
         image_format = image.format
 
@@ -53,15 +54,15 @@ def put_image(recipe_id):
     # Create thumbnail
     with Image.open(full_filename) as image:
         image.thumbnail((128, 128))
-        image.save(full_filename + ".thumbnail", image_format)
+        image.save(THUMBNAIL.format(full_filename), image_format)
 
     # Delete old Files
     if recipe.image:
         old_file = recipe.image
         try:
             os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file))
-            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file + ".thumbnail"))
-        except:
+            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], THUMBNAIL.format(old_file)))
+        except Exception:
             pass
             
     # Update DB
@@ -91,8 +92,8 @@ def delete_image(recipe_id):
         old_file = recipe.image
         try:
             os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file))
-            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], old_file + ".thumbnail"))
-        except:
+            os.unlink(os.path.join(current_app.config['UPLOAD_FOLDER'], THUMBNAIL.format(old_file)))
+        except Exception:
             pass
 
     # Always update DB

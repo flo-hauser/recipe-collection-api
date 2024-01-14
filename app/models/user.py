@@ -19,10 +19,11 @@ class User(db.Model):
     refresh_token_expiration = db.Column(db.DateTime)
 
     # Relationships
+    CASCADE_OPTIONS = "all, delete-orphan"
     roles = db.relationship("Role", secondary=user_roles)
-    recipes = db.relationship("Recipe", cascade="all, delete-orphan")
-    books = db.relationship("Book", cascade="all, delete-orphan")
-    ratings = db.relationship("Rating", cascade="all, delete-orphan")
+    recipes = db.relationship("Recipe", cascade=CASCADE_OPTIONS)
+    books = db.relationship("Book", cascade=CASCADE_OPTIONS)
+    ratings = db.relationship("Rating", cascade=CASCADE_OPTIONS)
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
@@ -55,10 +56,10 @@ class User(db.Model):
             data["email"] = self.email
         return data
 
-    def get_token(self, expires_in=3600, forceNew=False):
+    def get_token(self, expires_in=3600, force_new=False):
         now = datetime.utcnow()
 
-        if (self.token and self.token_expiration > now + timedelta(seconds=60)) and not forceNew:
+        if (self.token and self.token_expiration > now + timedelta(seconds=60)) and not force_new:
             return self.token
 
         self.token = secrets.token_hex(64)

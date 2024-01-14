@@ -11,9 +11,7 @@ from app.api.auth import token_auth
 def get_user(id):
     requesting_user = token_auth.current_user()
     include_email = False
-    if requesting_user.id == id:
-        include_email = True
-    elif "admin" in requesting_user.get_roles():
+    if requesting_user.id == id or "admin" in requesting_user.get_roles():
         include_email = True
 
     return jsonify(User.query.get_or_404(id).to_dict(include_email=include_email))
@@ -106,11 +104,11 @@ def update_user(id):
     password = data["password"]
 
     if (
-        not username == user.username
+        username != user.username
         and User.query.filter_by(username=username).first()
     ):
         return bad_request("please use a different username")
-    if not email == user.email and User.query.filter_by(email=email).first():
+    if email != user.email and User.query.filter_by(email=email).first():
         return bad_request("please use a different email address")
 
     user.from_dict(data, new_user=False)
