@@ -28,9 +28,9 @@ def create_recipe():
     user: User = token_auth.current_user()
     data = request.get_json() or {}
 
-    if not "book_id" in data:
+    if "book_id" not in data:
         return bad_request("book_id must be set")
-    if not "title" in data or not data["title"]:
+    if "title" not in data or not data["title"]:
         return bad_request("title must be set and a not empty string")
 
     # Get referenced Book
@@ -100,9 +100,9 @@ def update_recipe(recipe_id):
     user: User = token_auth.current_user()
     data = request.get_json() or {}
 
-    if not "book_id" in data:
+    if "book_id" not in data:
         return bad_request("book_id must be set")
-    if not "title" in data or not data["title"]:
+    if "title" not in data or not data["title"]:
         return bad_request("title must be set and a not empty string")
 
     # Get referenced Book
@@ -148,7 +148,7 @@ def delete_recipe(recipe_id):
         abort(404)
 
     result = db.session.execute(db.delete(Recipe).where(Recipe.id == recipe_id))
-    if not result.rowcount == 1:
+    if result.rowcount != 1:
         abort(500)
     db.session.commit()
 
