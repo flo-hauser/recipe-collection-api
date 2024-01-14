@@ -4,11 +4,15 @@ new_recipe_dict = {
     "book_id": 1,
 }
 
+RECIPE_ENDPOINT = "api/1/recipes"
+RECIPE_ENDPOINT_WITH_ID = "{}/{}".format(RECIPE_ENDPOINT, "{}")
+RECIPE_RATING = "{}/{}/rating".format(RECIPE_ENDPOINT, "{}")
+
 
 def test_get_all_recipes(client, auth, books, recipes):
     auth.login()
 
-    response = client.get("api/1/recipes", headers=auth.token_auth_header)
+    response = client.get(RECIPE_ENDPOINT, headers=auth.token_auth_header)
 
     assert response.status_code == 200
     assert len(response.json) == 5
@@ -22,7 +26,7 @@ def test_get_recipe(client, auth, books, recipes):
     auth.login()
 
     response = client.get(
-        "api/1/recipes/{}".format(recipes.recipe_1["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
     )
 
@@ -42,7 +46,7 @@ def test_get_recipe_of_another_user_404(books, auth, client, recipes):
     auth.login()
 
     response = client.get(
-        "api/1/recipes/{}".format(recipes.recipe_4["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
     )
     assert response.status_code == 404
@@ -59,7 +63,7 @@ def test_create_new_recipe(auth, client, books, recipes):
     auth.login()
 
     response = client.post(
-        "/api/1/recipes", json=new_recipe_dict, headers=auth.token_auth_header
+        RECIPE_ENDPOINT, json=new_recipe_dict, headers=auth.token_auth_header
     )
 
     assert response.status_code == 201
@@ -77,7 +81,7 @@ def test_create_recipe_fails_on_missing_title(auth, client, books):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["page", "book_id"]}
     response = client.post(
-        "/api/1/recipes", json=test_data, headers=auth.token_auth_header
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
@@ -88,7 +92,7 @@ def test_create_recipe_fails_on_empty_title(auth, client, books):
     test_data = {k: new_recipe_dict[k] for k in ["page", "book_id"]}
     test_data["title"] = ""
     response = client.post(
-        "/api/1/recipes", json=test_data, headers=auth.token_auth_header
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
@@ -98,7 +102,7 @@ def test_create_recipe_fails_on_missing_book_id(auth, client, books):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["title", "page"]}
     response = client.post(
-        "/api/1/recipes", json=test_data, headers=auth.token_auth_header
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
@@ -141,37 +145,37 @@ def test_search_recipe_only_own_recipes(client, auth, books, recipes):
 def test_update_recipe(client, auth, books, recipes):
     auth.login()
 
-    updateData = {
+    update_data = {
         "title": "Updated Title",
         "page": 999,
         "book_id": str(books.book_2["id"])
     }
 
     response = client.put(
-        "api/1/recipes/{}".format(recipes.recipe_1["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=updateData
+        json=update_data
     )
 
     assert response.status_code == 200
     data = response.json
-    assert data["title"] == updateData["title"]
-    assert data["page"] == updateData["page"]
-    assert data["_links"]["book"][-1] == updateData["book_id"]
+    assert data["title"] == update_data["title"]
+    assert data["page"] == update_data["page"]
+    assert data["_links"]["book"][-1] == update_data["book_id"]
 
 def test_update_recipe_of_another_user_fails(client, auth, books, recipes):
     auth.login()
 
-    updateData = {
+    update_data = {
         "title": "Updated Title",
         "page": 999,
         "book_id": str(books.book_2["id"])
     }
 
     response = client.put(
-        "api/1/recipes/{}".format(recipes.recipe_4["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
-        json=updateData
+        json=update_data
     )
 
     assert response.status_code == 404
@@ -180,7 +184,7 @@ def test_delete_recipe(client, auth, books, recipes):
     auth.login()
 
     response = client.delete(
-        "api/1/recipes/{}".format(recipes.recipe_1["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
     )
 
@@ -190,7 +194,7 @@ def test_delete_recipe_of_another_user(client, auth, books, recipes):
     auth.login()
 
     response = client.delete(
-        "api/1/recipes/{}".format(recipes.recipe_4["id"]),
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
     )
 
@@ -200,20 +204,20 @@ def test_recipe_rating(client, auth, books, recipes):
     auth.login()
 
     response = client.put(
-        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
         query_string={"rating": 3}
     )
 
     assert response.status_code == 200
     data = response.json
-    assert data["rating"] == 3.0
+    assert data["rating"] == 3
 
 def test_recipe_rating_of_another_user(client, auth, books, recipes):
     auth.login()
 
     response = client.put(
-        "api/1/recipes/{}/rating".format(recipes.recipe_4["id"]),
+        RECIPE_RATING.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
         query_string={"rating": 3}
     )
@@ -224,21 +228,21 @@ def test_recipe_rating_invalid_rating(client, auth, books, recipes):
     auth.login()
 
     response = client.put(
-        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
         query_string={"rating": 6}
     )
     assert response.status_code == 400
 
     response = client.put(
-        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
         query_string={"rating": "abc"}
     )
     assert response.status_code == 400
 
     response = client.put(
-        "api/1/recipes/{}/rating".format(recipes.recipe_1["id"]),
+        RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
         query_string={"another_query": 3}
     )
