@@ -8,6 +8,8 @@ from app.extensions import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
 
+INVALID_RATING_MSG = "rating must be an integer between 1 and 5"
+
 
 @bp.route("/recipes", methods=["GET"])
 @token_auth.login_required
@@ -32,6 +34,13 @@ def create_recipe():
         return bad_request("book_id must be set")
     if "title" not in data or not data["title"]:
         return bad_request("title must be set and a not empty string")
+    if "rating" in data:
+        try:
+            rating: int = int(data["rating"])
+        except ValueError:
+            return bad_request(INVALID_RATING_MSG)
+    else:
+        rating = 0
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -47,6 +56,15 @@ def create_recipe():
 
     db.session.add(recipe)
     db.session.commit()
+
+    if 1 <= rating <= 5:
+        r = Rating()
+        r.rating = rating
+        r.user = user
+        r.recipe = recipe
+
+        db.session.add(r)
+        db.session.commit()
 
     response = jsonify(recipe.to_dict())
     response.status_code = 201
@@ -104,6 +122,13 @@ def update_recipe(recipe_id):
         return bad_request("book_id must be set")
     if "title" not in data or not data["title"]:
         return bad_request("title must be set and a not empty string")
+    if "rating" in data:
+        try:
+            rating: int = int(data["rating"])
+        except ValueError:
+            return bad_request(INVALID_RATING_MSG)
+    else:
+        rating = 0
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -127,6 +152,28 @@ def update_recipe(recipe_id):
 
     db.session.add(recipe)
     db.session.commit()
+
+    # Update Rating
+    if 1 <= rating <= 5:
+        r: Rating = (
+            db.session.execute(
+                db.select(Rating)
+                .where(Rating.recipe_id == recipe_id)
+                .where(Rating.user_id == user.id)
+            )
+            .scalars()
+            .one_or_none()
+        )
+        if r:
+            r.rating = rating
+        else:
+            r = Rating()
+            r.rating = rating
+            r.user = user
+            r.recipe = recipe
+
+        db.session.add(r)
+        db.session.commit()
 
     return jsonify(recipe.to_dict())
 
@@ -167,9 +214,9 @@ def rate_recipe(recipe_id):
     try:
         rating = int(rating)
     except ValueError:
-        return bad_request("rating must be an integer between 1 and 5")
+        return bad_request(INVALID_RATING_MSG)
     if not 1 <= rating <= 5:
-        return bad_request("rating must be an integer between 1 and 5")
+        return bad_request(INVALID_RATING_MSG)
 
     # Get existing Recipe
     result = db.session.execute(
