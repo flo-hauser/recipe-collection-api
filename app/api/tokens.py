@@ -53,7 +53,7 @@ def refresh_token():
         abort(404)
 
     token_data = {
-        "token": user.get_token(forceNew=True),
+        "token": user.get_token(force_new=True),
         "token_expiration": user.token_expiration,
         "token_lifetime": user.get_token_lifetime(),
     }
