@@ -834,9 +834,19 @@ components:
         image:
           type: string
           format: uri
+        rating:
+          description: rating from 1 to 5
+          type: number
+          format: integer
+          minimum: 1
+          maximum: 5
         book_id:
           type: integer
           format: int32
+      required:
+        - title
+        - page
+        - book_id
     User:
       type: object
       properties:
@@ -873,6 +883,10 @@ components:
           type: string
         password:
           type: string
+      required:
+        - username
+        - email
+        - password
     Book:
       type: object
       properties:
@@ -901,8 +915,11 @@ components:
               type: string
               description: link to user
             recipes:
-              type: string
-              description: link to recipes
+              type: array
+              items:
+                type: string
+                format: uri
+                description: link to recipes
     Cookbook:
       allOf:
         - $ref: '#/components/schemas/Book'
