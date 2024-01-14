@@ -97,15 +97,23 @@ def get_recipe(recipe_id):
 def search_recipe():
     user: User = token_auth.current_user()
     search_term = request.args.get("q")
+    book = request.args.get("book")
 
-    if not search_term:
+    if not (search_term or book):
         query = db.select(Recipe).join(User.recipes).where(User.id == user.id)
-    else:
+    elif search_term and not book:
         query = (
             db.select(Recipe)
             .join(User.recipes)
             .where(User.id == user.id)
             .where(Recipe.title.contains(search_term))
+        )
+    elif book and not search_term:
+        query = (
+            db.select(Recipe)
+            .join(User.recipes)
+            .where(User.id == user.id)
+            .where(Recipe.book_id == book)
         )
     recipes = db.session.execute(query).scalars().all()
 

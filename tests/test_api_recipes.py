@@ -7,6 +7,7 @@ new_recipe_dict = {
 RECIPE_ENDPOINT = "api/1/recipes"
 RECIPE_ENDPOINT_WITH_ID = "{}/{}".format(RECIPE_ENDPOINT, "{}")
 RECIPE_RATING = "{}/{}/rating".format(RECIPE_ENDPOINT, "{}")
+RECIPE_SEARCH = "{}/search".format(RECIPE_ENDPOINT)
 
 
 def test_get_all_recipes(client, auth, books, recipes):
@@ -144,11 +145,11 @@ def test_create_recipe_fails_on_missing_login(client):
 
     assert response.status_code == 401
 
-def test_search_recipe(client, auth, books, recipes):
+def test_search_recipe_by_search_term(client, auth, books, recipes):
     auth.login()
 
     response = client.get(
-        "api/1/recipes/search",
+        RECIPE_SEARCH,
         headers=auth.token_auth_header,
         query_string = {"q": "rezept"}
     )
@@ -157,6 +158,22 @@ def test_search_recipe(client, auth, books, recipes):
     data = response.json
 
     assert len(data) == 2
+
+def test_search_recipes_by_book(client, auth, books, recipes):
+    auth.login()
+
+    response = client.get(
+        RECIPE_SEARCH,
+        headers=auth.token_auth_header,
+        query_string = {"book": str(books.book_1["id"])}
+    )
+
+    assert response.status_code == 200
+    data = response.json
+
+    assert len(data) == 2
+    for r in data:
+        assert r["_links"]["book"][-1] == str(books.book_1["id"])
 
 def test_search_recipe_only_own_recipes(client, auth, books, recipes):
     auth.login()
