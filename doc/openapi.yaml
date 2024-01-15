@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: recipe collection api
+  title: recipe-collection API
   version: 1.1.0
   description: backend service for recipe collection app
 servers:
