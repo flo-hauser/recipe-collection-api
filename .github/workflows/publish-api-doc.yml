@@ -1,8 +1,8 @@
 on: 
   push:
     paths:
-      - 'doc/openapi.yaml'
-
+      - 'docs/openapi.yaml'
+      
 jobs:
   validate-openapi:
     runs-on: ubuntu-latest
