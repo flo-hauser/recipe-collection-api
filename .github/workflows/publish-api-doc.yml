@@ -2,6 +2,7 @@ on:
   push:
     paths:
       - 'docs/openapi.yaml'
+  workflow_dispatch:
       
 jobs:
   validate-openapi:
@@ -13,7 +14,7 @@ jobs:
       - name: Validate OpenAPI definition
         uses: char0n/swagger-editor-validate@v1
         with:
-          definition-file: doc/openapi.yaml
+          definition-file: docs/openapi.yaml
 
   publish:
     needs: validate-openapi
