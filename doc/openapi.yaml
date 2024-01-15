@@ -42,7 +42,7 @@ paths:
   /tokens:
     get:
       summary: get a token
-      description: get a token for authentication
+      description: authenticate by basic auth and get a token
       operationId: get_token
       tags:
         - tokens

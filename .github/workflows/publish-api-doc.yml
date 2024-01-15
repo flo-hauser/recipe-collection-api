@@ -1,7 +1,7 @@
 on: 
   push:
     paths:
-      - 'docs/openapi.yaml'
+      - 'doc/openapi.yaml'
 
 jobs:
   validate-openapi:
