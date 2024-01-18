@@ -2,6 +2,7 @@ from app.extensions import db
 from app.models.recipe import Recipe
 from app.models.user import User
 from app.models.book import Book, Cookbook, Magazine
+from app.models.tag import Tag
 
 
 class RecipeFixtures:
@@ -41,6 +42,7 @@ class RecipeFixtures:
             r_1.title = "Title - 1"
             r_1.page = 42
             r_1.image_path = "/some/uri"
+            r_1.tags = [Tag(tag_name="tag1"), Tag(tag_name="tag2")]
 
             r_2 = Recipe()
             r_2.book = book_1
@@ -48,6 +50,7 @@ class RecipeFixtures:
             r_2.title = "Title - 2"
             r_2.page = 51
             r_2.image_path = "/some/uri/to/another/img"
+            r_2.tags = [Tag(tag_name="tag3"), Tag(tag_name="tag4")]
 
             r_3 = Recipe()
             r_3.book = book_2
@@ -55,6 +58,7 @@ class RecipeFixtures:
             r_3.title = "Title - 3"
             r_3.page = 4
             r_3.image_path = "/some/uri/457"
+            r_3.tags = [Tag(tag_name="tag5"), Tag(tag_name="tag6")]
 
             r_3_1 = Recipe()
             r_3_1.book = book_2
@@ -62,6 +66,7 @@ class RecipeFixtures:
             r_3_1.title = "ein rezept titel"
             r_3_1.page = 4
             r_3_1.image_path = "/some/uri/457"
+            r_3_1.tags = [Tag(tag_name="tag7"), Tag(tag_name="tag8")]
 
             r_3_2 = Recipe()
             r_3_2.book = book_2
@@ -69,6 +74,7 @@ class RecipeFixtures:
             r_3_2.title = "noch ein rezept"
             r_3_2.page = 4
             r_3_2.image_path = "/some/uri/457"
+            r_3_2.tags = [Tag(tag_name="tag9"), Tag(tag_name="tag10")]
 
             r_4 = Recipe()
             r_4.book = book_3

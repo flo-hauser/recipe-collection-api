@@ -36,6 +36,9 @@ def test_get_recipe(client, auth, books, recipes):
     assert data["title"] == recipes.recipe_1["title"]
     assert data["page"] == recipes.recipe_1["page"]
     assert data["image"] == recipes.recipe_1["image"]
+    assert isinstance(data["tags"], list) and len(data["tags"]) == 2
+    assert data["tags"][0]["tag_name"] == recipes.recipe_1["tags"][0]["tag_name"]
+    assert data["tags"][1]["tag_name"] == recipes.recipe_1["tags"][1]["tag_name"]
     assert data["_links"] == recipes.recipe_1["_links"]
     assert "image" in data["_links"]
     assert "thumbnail" in data["_links"]
@@ -115,6 +118,44 @@ def test_create_new_recipe_with_invalid_rating(auth, client, books, recipes):
 def test_create_recipe_fails_on_missing_title(auth, client, books):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["page", "book_id"]}
+    response = client.post(
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 400
+
+def test_create_recipe_with_new_tag(auth, client, books, recipes):
+    auth.login()
+    test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
+    test_data["tags"] = [{"tag_name": "new tag"}]
+    response = client.post(
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 201
+    res_data = response.json
+
+    assert len(res_data["tags"]) == 1
+    assert res_data["tags"][0]["tag_name"] == "new tag"
+
+def test_create_recipe_with_existing_tag(auth, client, books, recipes):
+    auth.login()
+    test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
+    test_data["tags"] = [{"id": recipes.recipe_1["tags"][0]["id"]}]
+    response = client.post(
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 201
+    res_data = response.json
+
+    assert len(res_data["tags"]) == 1
+    assert res_data["tags"][0]["tag_name"] == recipes.recipe_1["tags"][0]["tag_name"]
+
+def test_create_recipe_with_invalid_tag_data(auth, client, books, recipes):
+    auth.login()
+    test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
+    test_data["tags"] = [{"no_id": 1234, "no_name": "new tag"}]
     response = client.post(
         RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
@@ -240,6 +281,28 @@ def test_update_recipe_with_rating(client, auth, books, recipes):
     assert response.status_code == 200
     data = response.json
     assert data["rating"] == update_data["rating"]
+
+def test_update_recipe_with_tags(client, auth, books, recipes):
+    auth.login()
+    
+    update_data = {
+        "title": "Updated Rating",
+        "page": 999,
+        "book_id": str(books.book_2["id"]),
+        "tags": [{"tag_name": "new tag"}, {"id": recipes.recipe_1["tags"][0]["id"]}]
+    }
+
+    response = client.put(
+        RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
+        headers=auth.token_auth_header,
+        json=update_data
+    )
+
+    assert response.status_code == 200
+    data = response.json
+    assert len(data["tags"]) == 2
+    assert "new tag" in [t["tag_name"] for t in data["tags"]]
+    assert recipes.recipe_1["tags"][0]["tag_name"] in [t["tag_name"] for t in data["tags"]]
 
 def test_update_recipe_with_invalid_rating(client, auth, books, recipes):
     auth.login()

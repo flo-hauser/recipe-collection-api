@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.recipe import Recipe
 from app.models.book import Book
 from app.models.rating import Rating
+from app.models.recipe_tag import recipe_tags
 from app.extensions import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
@@ -41,6 +42,12 @@ def create_recipe():
             return bad_request(INVALID_RATING_MSG)
     else:
         rating = 0
+    if "tags" in data:
+        if not isinstance(data["tags"], list):
+            return bad_request("tags must be a list")
+        for tag in data["tags"]:
+            if not ("id" in tag or "tag_name" in tag):
+                return bad_request("tag must have id or tag_name")
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -137,6 +144,12 @@ def update_recipe(recipe_id):
             return bad_request(INVALID_RATING_MSG)
     else:
         rating = 0
+    if "tags" in data:
+        if not isinstance(data["tags"], list):
+            return bad_request("tags must be a list")
+        for tag in data["tags"]:
+            if not ("id" in tag or "tag_name" in tag):
+                return bad_request("tag must have id or tag_name")
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -154,6 +167,13 @@ def update_recipe(recipe_id):
     recipe: Recipe = result.scalars().one_or_none()
     if not recipe:
         abort(404)
+
+    # remove old tags
+    if "tags" in data:
+        db.session.execute(
+            db.delete(recipe_tags).where(recipe_tags.c.recipe_id == recipe_id)
+        )
+        recipe.tags = []
 
     recipe.from_dict(data)
     recipe.book = book
@@ -201,6 +221,13 @@ def delete_recipe(recipe_id):
     recipe: Recipe = result.scalars().one_or_none()
     if not recipe:
         abort(404)
+
+    # dereference tags
+    db.session.execute(
+        db.delete(recipe_tags).where(recipe_tags.c.recipe_id == recipe_id)
+    )
+    recipe.tags = []
+
 
     result = db.session.execute(db.delete(Recipe).where(Recipe.id == recipe_id))
     if result.rowcount != 1:

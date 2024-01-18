@@ -38,3 +38,4 @@ from app.models.book import Book
 from app.models.book import Magazine
 from app.models.book import Cookbook
 from app.models.rating import Rating
+from app.models.tag import Tag

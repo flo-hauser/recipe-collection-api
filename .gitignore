@@ -36,3 +36,7 @@ images/*
 
 # gitkeep empty folders
 !.gitkeep
+
+# help resources
+help/
+
