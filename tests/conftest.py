@@ -8,6 +8,9 @@ from app.extensions import db
 from app.models.role import Role
 from app.models.user import User
 
+@pytest.fixture
+def basic_app():
+    yield create_app(TestConfig)
 
 @pytest.fixture
 def app():

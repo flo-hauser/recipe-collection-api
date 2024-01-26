@@ -7,6 +7,7 @@ env/
 venv/
 .venv/
 env*
+!env.py
 dist/
 build/
 *.egg
@@ -29,7 +30,7 @@ coverage.*
 
 # Database
 *.db
-!env.py
+*.sql
 
 # dev images
 images/*

@@ -22,6 +22,7 @@ def test_get_all_recipes(client, auth, books, recipes):
         # only own books
         assert r["_links"]["user"][-1] == str(recipes.user_1["id"])
 
+
 def test_get_recipe(client, auth, books, recipes):
     auth.login()
 
@@ -44,6 +45,7 @@ def test_get_recipe(client, auth, books, recipes):
     assert "thumbnail" in data["_links"]
     assert "self" in data["_links"]
 
+
 def test_get_recipe_of_another_user_404(books, auth, client, recipes):
     auth.login()
 
@@ -53,11 +55,13 @@ def test_get_recipe_of_another_user_404(books, auth, client, recipes):
     )
     assert response.status_code == 404
 
+
 def test_get_recipe_not_existing_id_404(auth, client, books, recipes):
     auth.login()
 
     response = client.get("api/1/recipes/1234", headers=auth.token_auth_header)
     assert response.status_code == 404
+
 
 def test_create_new_recipe(auth, client, books, recipes):
     auth.login()
@@ -77,6 +81,7 @@ def test_create_new_recipe(auth, client, books, recipes):
     assert "_links" in res_data
     assert res_data["_links"]["book"][-1] == str(new_recipe_dict["book_id"])
 
+
 def test_create_new_recipe_with_rating(auth, client, books, recipes):
     auth.login()
 
@@ -92,10 +97,11 @@ def test_create_new_recipe_with_rating(auth, client, books, recipes):
 
     assert res_data["rating"] == test_data["rating"]
 
+
 def test_create_new_recipe_with_invalid_rating(auth, client, books, recipes):
     auth.login()
 
-    # invalid range 
+    # invalid range
     test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
     test_data["rating"] = 6
 
@@ -103,9 +109,7 @@ def test_create_new_recipe_with_invalid_rating(auth, client, books, recipes):
         RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
-    assert response.status_code == 201
-    res_data = response.json
-    assert res_data["rating"] == 0
+    assert response.status_code == 400
 
     # invalid literal
     test_data["rating"] = "abc"
@@ -114,6 +118,7 @@ def test_create_new_recipe_with_invalid_rating(auth, client, books, recipes):
     )
 
     assert response.status_code == 400
+
 
 def test_create_recipe_fails_on_missing_title(auth, client, books):
     auth.login()
@@ -124,10 +129,11 @@ def test_create_recipe_fails_on_missing_title(auth, client, books):
 
     assert response.status_code == 400
 
+
 def test_create_recipe_with_new_tag(auth, client, books, recipes):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
-    test_data["tags"] = [{"tag_name": "new tag"}]
+    test_data["tags"] = [{"tag_name": "taggo"}]
     response = client.post(
         RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
@@ -136,7 +142,8 @@ def test_create_recipe_with_new_tag(auth, client, books, recipes):
     res_data = response.json
 
     assert len(res_data["tags"]) == 1
-    assert res_data["tags"][0]["tag_name"] == "new tag"
+    assert res_data["tags"][0]["tag_name"] == test_data["tags"][0]["tag_name"]
+
 
 def test_create_recipe_with_existing_tag(auth, client, books, recipes):
     auth.login()
@@ -152,15 +159,17 @@ def test_create_recipe_with_existing_tag(auth, client, books, recipes):
     assert len(res_data["tags"]) == 1
     assert res_data["tags"][0]["tag_name"] == recipes.recipe_1["tags"][0]["tag_name"]
 
+
 def test_create_recipe_with_invalid_tag_data(auth, client, books, recipes):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
-    test_data["tags"] = [{"no_id": 1234, "no_name": "new tag"}]
+    test_data["tags"] = [{"no_id": 1234, "no_name": "any tag"}]
     response = client.post(
         RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
+
 
 def test_create_recipe_fails_on_empty_title(auth, client, books):
     auth.login()
@@ -172,6 +181,7 @@ def test_create_recipe_fails_on_empty_title(auth, client, books):
 
     assert response.status_code == 400
 
+
 def test_create_recipe_fails_on_missing_book_id(auth, client, books):
     auth.login()
     test_data = {k: new_recipe_dict[k] for k in ["title", "page"]}
@@ -181,18 +191,18 @@ def test_create_recipe_fails_on_missing_book_id(auth, client, books):
 
     assert response.status_code == 400
 
+
 def test_create_recipe_fails_on_missing_login(client):
     response = client.post("/api/1/books", json=new_recipe_dict)
 
     assert response.status_code == 401
 
+
 def test_search_recipe_by_search_term(client, auth, books, recipes):
     auth.login()
 
     response = client.get(
-        RECIPE_SEARCH,
-        headers=auth.token_auth_header,
-        query_string = {"q": "rezept"}
+        RECIPE_SEARCH, headers=auth.token_auth_header, query_string={"q": "rezept"}
     )
 
     assert response.status_code == 200
@@ -200,13 +210,14 @@ def test_search_recipe_by_search_term(client, auth, books, recipes):
 
     assert len(data) == 2
 
+
 def test_search_recipes_by_book(client, auth, books, recipes):
     auth.login()
 
     response = client.get(
         RECIPE_SEARCH,
         headers=auth.token_auth_header,
-        query_string = {"book": str(books.book_1["id"])}
+        query_string={"book": str(books.book_1["id"])},
     )
 
     assert response.status_code == 200
@@ -216,13 +227,14 @@ def test_search_recipes_by_book(client, auth, books, recipes):
     for r in data:
         assert r["_links"]["book"][-1] == str(books.book_1["id"])
 
+
 def test_search_recipe_only_own_recipes(client, auth, books, recipes):
     auth.login()
 
     response = client.get(
         "api/1/recipes/search",
         headers=auth.token_auth_header,
-        query_string = {"q": "title"}
+        query_string={"q": "title"},
     )
 
     assert response.status_code == 200
@@ -230,19 +242,20 @@ def test_search_recipe_only_own_recipes(client, auth, books, recipes):
 
     assert len(data) == 3
 
+
 def test_update_recipe(client, auth, books, recipes):
     auth.login()
 
     update_data = {
         "title": "update title",
         "page": 999,
-        "book_id": str(books.book_2["id"])
+        "book_id": str(books.book_2["id"]),
     }
 
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 200
@@ -251,20 +264,21 @@ def test_update_recipe(client, auth, books, recipes):
     assert data["page"] == update_data["page"]
     assert data["_links"]["book"][-1] == update_data["book_id"]
 
+
 def test_update_recipe_with_rating(client, auth, books, recipes):
     auth.login()
-    
+
     update_data = {
-        "title": "Updated Rating",
+        "title": "Updated Rating - 1",
         "page": 999,
         "book_id": str(books.book_2["id"]),
-        "rating": 1
+        "rating": 1,
     }
 
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 200
@@ -275,63 +289,68 @@ def test_update_recipe_with_rating(client, auth, books, recipes):
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 200
     data = response.json
     assert data["rating"] == update_data["rating"]
 
+
 def test_update_recipe_with_tags(client, auth, books, recipes):
     auth.login()
-    
+
     update_data = {
-        "title": "Updated Rating",
+        "title": "Updated Rating - 2",
         "page": 999,
         "book_id": str(books.book_2["id"]),
-        "tags": [{"tag_name": "new tag"}, {"id": recipes.recipe_1["tags"][0]["id"]}]
+        "tags": [{"tag_name": "new tag"}, {"id": recipes.recipe_1["tags"][0]["id"]}],
     }
 
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 200
     data = response.json
     assert len(data["tags"]) == 2
-    assert "new tag" in [t["tag_name"] for t in data["tags"]]
-    assert recipes.recipe_1["tags"][0]["tag_name"] in [t["tag_name"] for t in data["tags"]]
+    assert update_data["tags"][0]["tag_name"] in [t["tag_name"] for t in data["tags"]]
+    assert recipes.recipe_1["tags"][0]["tag_name"] in [
+        t["tag_name"] for t in data["tags"]
+    ]
+
 
 def test_update_recipe_with_invalid_rating(client, auth, books, recipes):
     auth.login()
-    
+
+    # Rating out of range
     update_data = {
-        "title": "Updated Rating",
+        "title": "Updated Rating - 3",
         "page": 999,
         "book_id": str(books.book_2["id"]),
-        "rating": 6
+        "rating": 6,
     }
 
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
-    assert response.status_code == 200
-    data = response.json
-    assert data["rating"] == 0
+    assert response.status_code == 400
 
+    # Rating invalid literal
     update_data["rating"] = "abc"
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 400
+
 
 def test_update_recipe_of_another_user_fails(client, auth, books, recipes):
     auth.login()
@@ -339,16 +358,17 @@ def test_update_recipe_of_another_user_fails(client, auth, books, recipes):
     update_data = {
         "title": "Updated Title",
         "page": 999,
-        "book_id": str(books.book_2["id"])
+        "book_id": str(books.book_2["id"]),
     }
 
     response = client.put(
         RECIPE_ENDPOINT_WITH_ID.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
-        json=update_data
+        json=update_data,
     )
 
     assert response.status_code == 404
+
 
 def test_delete_recipe(client, auth, books, recipes):
     auth.login()
@@ -360,6 +380,7 @@ def test_delete_recipe(client, auth, books, recipes):
 
     assert response.status_code == 204
 
+
 def test_delete_recipe_of_another_user(client, auth, books, recipes):
     auth.login()
 
@@ -370,18 +391,20 @@ def test_delete_recipe_of_another_user(client, auth, books, recipes):
 
     assert response.status_code == 404
 
+
 def test_recipe_rating(client, auth, books, recipes):
     auth.login()
 
     response = client.put(
         RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        query_string={"rating": 3}
+        query_string={"rating": 3},
     )
 
     assert response.status_code == 200
     data = response.json
     assert data["rating"] == 3
+
 
 def test_recipe_rating_of_another_user(client, auth, books, recipes):
     auth.login()
@@ -389,10 +412,11 @@ def test_recipe_rating_of_another_user(client, auth, books, recipes):
     response = client.put(
         RECIPE_RATING.format(recipes.recipe_4["id"]),
         headers=auth.token_auth_header,
-        query_string={"rating": 3}
+        query_string={"rating": 3},
     )
 
     assert response.status_code == 404
+
 
 def test_recipe_rating_invalid_rating(client, auth, books, recipes):
     auth.login()
@@ -400,20 +424,20 @@ def test_recipe_rating_invalid_rating(client, auth, books, recipes):
     response = client.put(
         RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        query_string={"rating": 6}
+        query_string={"rating": 6},
     )
     assert response.status_code == 400
 
     response = client.put(
         RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        query_string={"rating": "abc"}
+        query_string={"rating": "abc"},
     )
     assert response.status_code == 400
 
     response = client.put(
         RECIPE_RATING.format(recipes.recipe_1["id"]),
         headers=auth.token_auth_header,
-        query_string={"another_query": 3}
+        query_string={"another_query": 3},
     )
     assert response.status_code == 400

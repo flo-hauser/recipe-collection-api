@@ -6,10 +6,14 @@ from app.models.book import Book
 from app.models.rating import Rating
 from app.models.recipe_tag import recipe_tags
 from app.extensions import db
+from app.validators import (
+    required_fields,
+    required_query_params,
+    validate_rating,
+    validate_tags,
+)
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
-
-INVALID_RATING_MSG = "rating must be an integer between 1 and 5"
 
 
 @bp.route("/recipes", methods=["GET"])
@@ -27,27 +31,12 @@ def get_all_recipes():
 
 @bp.route("/recipes", methods=["POST"])
 @token_auth.login_required
+@required_fields(["book_id", "title"])
+@validate_rating
+@validate_tags
 def create_recipe():
     user: User = token_auth.current_user()
     data = request.get_json() or {}
-
-    if "book_id" not in data:
-        return bad_request("book_id must be set")
-    if "title" not in data or not data["title"]:
-        return bad_request("title must be set and a not empty string")
-    if "rating" in data:
-        try:
-            rating: int = int(data["rating"])
-        except ValueError:
-            return bad_request(INVALID_RATING_MSG)
-    else:
-        rating = 0
-    if "tags" in data:
-        if not isinstance(data["tags"], list):
-            return bad_request("tags must be a list")
-        for tag in data["tags"]:
-            if not ("id" in tag or "tag_name" in tag):
-                return bad_request("tag must have id or tag_name")
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -64,7 +53,8 @@ def create_recipe():
     db.session.add(recipe)
     db.session.commit()
 
-    if 1 <= rating <= 5:
+    rating = data["rating"]
+    if rating:
         r = Rating()
         r.rating = rating
         r.user = user
@@ -129,27 +119,12 @@ def search_recipe():
 
 @bp.route("/recipes/<int:recipe_id>", methods=["PUT"])
 @token_auth.login_required
+@required_fields(["book_id", "title"])
+@validate_rating
+@validate_tags
 def update_recipe(recipe_id):
     user: User = token_auth.current_user()
     data = request.get_json() or {}
-
-    if "book_id" not in data:
-        return bad_request("book_id must be set")
-    if "title" not in data or not data["title"]:
-        return bad_request("title must be set and a not empty string")
-    if "rating" in data:
-        try:
-            rating: int = int(data["rating"])
-        except ValueError:
-            return bad_request(INVALID_RATING_MSG)
-    else:
-        rating = 0
-    if "tags" in data:
-        if not isinstance(data["tags"], list):
-            return bad_request("tags must be a list")
-        for tag in data["tags"]:
-            if not ("id" in tag or "tag_name" in tag):
-                return bad_request("tag must have id or tag_name")
 
     # Get referenced Book
     select_book = db.select(Book).where(Book.id == data["book_id"])
@@ -182,7 +157,8 @@ def update_recipe(recipe_id):
     db.session.commit()
 
     # Update Rating
-    if 1 <= rating <= 5:
+    rating = data["rating"]
+    if rating:
         r: Rating = (
             db.session.execute(
                 db.select(Rating)
@@ -228,7 +204,6 @@ def delete_recipe(recipe_id):
     )
     recipe.tags = []
 
-
     result = db.session.execute(db.delete(Recipe).where(Recipe.id == recipe_id))
     if result.rowcount != 1:
         abort(500)
@@ -239,19 +214,11 @@ def delete_recipe(recipe_id):
 
 @bp.route("/recipes/<int:recipe_id>/rating", methods=["PUT"])
 @token_auth.login_required
+@validate_rating
+@required_query_params(["rating"])
 def rate_recipe(recipe_id):
     user: User = token_auth.current_user()
     rating = request.args.get("rating")
-
-    # Validate rating
-    if not rating:
-        return bad_request("rating must be set")
-    try:
-        rating = int(rating)
-    except ValueError:
-        return bad_request(INVALID_RATING_MSG)
-    if not 1 <= rating <= 5:
-        return bad_request(INVALID_RATING_MSG)
 
     # Get existing Recipe
     result = db.session.execute(
