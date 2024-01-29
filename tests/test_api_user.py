@@ -7,9 +7,15 @@ new_user_dict = {
     "password": "pass",
 }
 
+USER_ENDPOINT = "/api/1/users"
+USER_ENDPOINT_MATCH = "{}/search/match".format(USER_ENDPOINT)
+USER_ENDPOINT_EXISTS = "{}/exists".format(USER_ENDPOINT)
+USER_ENDPOINT_ME = "{}/me".format(USER_ENDPOINT)
+USER_ENDPOINT_WITH_ID = "{}/{}".format(USER_ENDPOINT, "{}")
+
 
 def test_create_user(client):
-    response = client.post("/api/1/users", json=new_user_dict)
+    response = client.post(USER_ENDPOINT, json=new_user_dict)
 
     assert response.status_code == 201
     res_data = response.json
@@ -22,7 +28,7 @@ def test_create_user(client):
 def test_create_user_fails_on_missing_username(client):
     test_data = {k: new_user_dict[k] for k in ["password", "email"]}
 
-    response = client.post("/api/1/users", json=test_data)
+    response = client.post(USER_ENDPOINT, json=test_data)
 
     assert response.status_code == 400
 
@@ -30,7 +36,7 @@ def test_create_user_fails_on_missing_username(client):
 def test_create_user_fails_on_missing_password(client):
     test_data = {k: new_user_dict[k] for k in ["username", "email"]}
 
-    response = client.post("/api/1/users", json=test_data)
+    response = client.post(USER_ENDPOINT, json=test_data)
 
     assert response.status_code == 400
 
@@ -38,7 +44,7 @@ def test_create_user_fails_on_missing_password(client):
 def test_create_user_fails_on_missing_email(client):
     test_data = {k: new_user_dict[k] for k in ["password", "username"]}
 
-    response = client.post("/api/1/users", json=test_data)
+    response = client.post(USER_ENDPOINT, json=test_data)
 
     assert response.status_code == 400
 
@@ -46,7 +52,7 @@ def test_create_user_fails_on_missing_email(client):
 def test_create_user_fails_on_existing_email(client):
     test_data = {**new_user_dict, "email": "admin@example.com"}
 
-    response = client.post("/api/1/users", json=test_data)
+    response = client.post(USER_ENDPOINT, json=test_data)
 
     assert response.status_code == 400
 
@@ -54,7 +60,7 @@ def test_create_user_fails_on_existing_email(client):
 def test_create_user_fails_on_existing_username(client):
     test_data = {**new_user_dict, "username": "admin"}
 
-    response = client.post("/api/1/users", json=test_data)
+    response = client.post(USER_ENDPOINT, json=test_data)
 
     assert response.status_code == 400
 
@@ -64,7 +70,7 @@ def test_get_user(client, auth):
 
     user_id = auth.user.id
     response = client.get(
-        "/api/1/users/{:d}".format(user_id), headers=auth.token_auth_header
+        USER_ENDPOINT_WITH_ID.format(user_id), headers=auth.token_auth_header
     )
 
     assert response.status_code == 200
@@ -80,7 +86,7 @@ def test_get_self(client, auth):
     auth.login()
 
     response = client.get(
-        "/api/1/users/me", headers=auth.token_auth_header
+        USER_ENDPOINT_ME, headers=auth.token_auth_header
     )
 
     assert response.status_code == 200
@@ -96,7 +102,7 @@ def test_search_user_match_by_name(client, auth):
     auth.login()
 
     response = client.get(
-        "/api/1/users/search/match",
+        USER_ENDPOINT_MATCH,
         headers=auth.token_auth_header,
         query_string = {"username": "user_1"}
     )
@@ -114,7 +120,7 @@ def test_search_user_match_by_email(client, auth):
     auth.login()
 
     response = client.get(
-        "/api/1/users/search/match",
+        USER_ENDPOINT_MATCH,
         headers=auth.token_auth_header,
         query_string = {"email": "user_1@example.com"}
     )
@@ -132,7 +138,7 @@ def test_search_user_match_by_name_404(client, auth):
     auth.login()
 
     response = client.get(
-        "/api/1/users/search/match",
+        USER_ENDPOINT_MATCH,
         headers=auth.token_auth_header,
         query_string = {"username": "no user"}
     )
@@ -143,7 +149,7 @@ def test_search_user_match_by_email_404(client, auth):
     auth.login()
 
     response = client.get(
-        "/api/1/users/search/match",
+        USER_ENDPOINT_MATCH,
         headers=auth.token_auth_header,
         query_string = {"email": "no@mail.com"}
     )
@@ -152,7 +158,7 @@ def test_search_user_match_by_email_404(client, auth):
 
 def test_search_user_match_not_logged_in(client, auth):
     response = client.get(
-        "/api/1/users/search/match",
+        USER_ENDPOINT_MATCH,
         query_string = {"username": "user_1"}
     )
 
@@ -160,7 +166,7 @@ def test_search_user_match_not_logged_in(client, auth):
 
 def test_search_user_exists_by_name(client, auth):
     response = client.get(
-        "/api/1/users/exists",
+        USER_ENDPOINT_EXISTS,
         headers=auth.token_auth_header,
         query_string = {"username": "user_1"}
     )
@@ -171,7 +177,7 @@ def test_search_user_exists_by_name(client, auth):
     assert res_data == True
 
     response = client.get(
-        "/api/1/users/exists",
+        USER_ENDPOINT_EXISTS,
         headers=auth.token_auth_header,
         query_string = {"username": "user_xx"}
     )
@@ -183,7 +189,7 @@ def test_search_user_exists_by_name(client, auth):
 
 def test_search_user_exists_by_email(client, auth):
     response = client.get(
-        "/api/1/users/exists",
+        USER_ENDPOINT_EXISTS,
         headers=auth.token_auth_header,
         query_string = {"email": "user_1@example.com"}
     )
@@ -194,7 +200,7 @@ def test_search_user_exists_by_email(client, auth):
     assert res_data == True
 
     response = client.get(
-        "/api/1/users/exists",
+        USER_ENDPOINT_EXISTS,
         headers=auth.token_auth_header,
         query_string = {"email": "no@mail.com"}
     )
@@ -209,7 +215,7 @@ def test_get_user_as_another_user(client, auth):
 
     user_id = auth.user.id
     response = client.get(
-        "/api/1/users/{:d}".format(user_id + 1), headers=auth.token_auth_header
+        USER_ENDPOINT_WITH_ID.format(user_id + 1), headers=auth.token_auth_header
     )
 
     assert response.status_code == 200
@@ -223,7 +229,7 @@ def test_get_user_as_admin(client, auth):
 
     user_id = auth.user.id
     response = client.get(
-        "/api/1/users/{:d}".format(user_id + 1), headers=auth.token_auth_header
+        USER_ENDPOINT_WITH_ID.format(user_id + 1), headers=auth.token_auth_header
     )
 
     assert response.status_code == 200
@@ -234,9 +240,9 @@ def test_get_user_as_admin(client, auth):
 
 def test_get_user_as_anonymous_fails(client):
     user_id = 2
-    response_1 = client.get("/api/1/users/{:d}".format(user_id))
+    response_1 = client.get(USER_ENDPOINT_WITH_ID.format(user_id))
     response_2 = client.get(
-        "/api/1/users/{:d}".format(user_id),
+        USER_ENDPOINT_WITH_ID.format(user_id),
         headers={"Authorization": "token: someRandomStringPretendingToBeAValidToken"},
     )
 
@@ -260,7 +266,7 @@ def test_edit_user(app, client, auth):
     user_id = auth.user.id
     request_body = {"username": "foo", "email": "foo@abc.de", "password": "foo"}
     response = client.put(
-        "/api/1/users/{:d}".format(user_id),
+        USER_ENDPOINT_WITH_ID.format(user_id),
         headers=auth.token_auth_header,
         json=request_body,
     )
@@ -281,7 +287,7 @@ def test_edit_user_as_another_user(client, auth):
     user_id = auth.user.id
     request_body = {"username": "foo", "email": "foo@abc.de", "password": "foo"}
     response = client.put(
-        "/api/1/users/{:d}".format(user_id + 1),
+        USER_ENDPOINT_WITH_ID.format(user_id + 1),
         headers=auth.token_auth_header,
         json=request_body,
     )
@@ -294,7 +300,7 @@ def test_edit_user_as_admin(client, auth):
     user_id = auth.user.id
     request_body = {"username": "foo", "email": "foo@abc.de", "password": "foo"}
     response = client.put(
-        "/api/1/users/{:d}".format(user_id + 1),
+        USER_ENDPOINT_WITH_ID.format(user_id + 1),
         headers=auth.token_auth_header,
         json=request_body,
     )
@@ -313,7 +319,7 @@ def test_edit_user_with_malformed_body(client, auth):
 
     for rb in request_bodies:
         response = client.put(
-            "/api/1/users/{:d}".format(user_id),
+            USER_ENDPOINT_WITH_ID.format(user_id),
             headers=auth.token_auth_header,
             json=rb,
         )
@@ -330,7 +336,7 @@ def test_edit_user_with_existing_name_email(client, auth):
 
     for rb in request_bodies:
         response = client.put(
-            "/api/1/users/{:d}".format(user_id),
+            USER_ENDPOINT_WITH_ID.format(user_id),
             headers=auth.token_auth_header,
             json=rb,
         )
@@ -340,7 +346,7 @@ def test_edit_user_with_existing_name_email(client, auth):
 def test_get_users(client, auth):
     auth.login(username="admin", password="admin")
     response = client.get(
-        "/api/1/users",
+        USER_ENDPOINT,
         headers=auth.token_auth_header,
     )
 
@@ -357,12 +363,12 @@ def test_get_users(client, auth):
 def test_get_users_as_non_admin(client, auth):
     auth.login()
     response_1 = client.get(
-        "/api/1/users",
+        USER_ENDPOINT,
         headers=auth.token_auth_header,
     )
     auth.logout()
     response_2 = client.get(
-        "/api/1/users",
+        USER_ENDPOINT,
         headers=auth.token_auth_header,
     )
 

@@ -1,6 +1,9 @@
 from app.extensions import db
 from app.models.book import Book
 
+BOOK_ENDPOINT = "/api/1/books"
+BOOK_ENDPOINT_WITH_ID = "{}/{}".format(BOOK_ENDPOINT, "{}")
+
 
 def test_get_book_types(client):
     response = client.get("api/1/books/types")
@@ -25,7 +28,7 @@ def test_get_book(books, auth, client):
     auth.login()
 
     response = client.get(
-        "api/1/books/{}".format(books.book_1["id"]), headers=auth.token_auth_header
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]), headers=auth.token_auth_header
     )
 
     assert response.status_code == 200
@@ -40,7 +43,7 @@ def test_get_book_with_recipes(books, recipes, auth, client):
     auth.login()
 
     response = client.get(
-        "api/1/books/{}".format(books.book_1["id"]), headers=auth.token_auth_header
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]), headers=auth.token_auth_header
     ) 
 
     assert response.status_code == 200
@@ -54,7 +57,7 @@ def test_get_book_of_another_user_404(books, auth, client):
     auth.login()
 
     response = client.get(
-        "api/1/books/{}".format(books.book_3["id"]), headers=auth.token_auth_header
+        BOOK_ENDPOINT_WITH_ID.format(books.book_3["id"]), headers=auth.token_auth_header
     )
     assert response.status_code == 404
 
@@ -73,7 +76,7 @@ new_mag_dict = {"title": "t2", "year": 2001, "issue": "15 - 5", "type": "magazin
 def test_create_cookbook(auth, client):
     auth.login()
     response = client.post(
-        "/api/1/books", json=new_cb_dict, headers=auth.token_auth_header
+        BOOK_ENDPOINT, json=new_cb_dict, headers=auth.token_auth_header
     )
 
     assert response.status_code == 201
@@ -89,7 +92,7 @@ def test_create_cookbook(auth, client):
 def test_create_magazine(auth, client):
     auth.login()
     response = client.post(
-        "/api/1/books", json=new_mag_dict, headers=auth.token_auth_header
+        BOOK_ENDPOINT, json=new_mag_dict, headers=auth.token_auth_header
     )
 
     assert response.status_code == 201
@@ -106,7 +109,7 @@ def test_create_cookbook_fails_on_missing_title(auth, client):
     auth.login()
     test_data = {k: new_cb_dict[k] for k in ["year", "author", "type"]}
     response = client.post(
-        "/api/1/books", json=test_data, headers=auth.token_auth_header
+        BOOK_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
@@ -116,7 +119,7 @@ def test_create_cookbook_fails_on_missing_type(auth, client):
     auth.login()
     test_data = {k: new_cb_dict[k] for k in ["year", "author", "title"]}
     response = client.post(
-        "/api/1/books", json=test_data, headers=auth.token_auth_header
+        BOOK_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
@@ -126,14 +129,14 @@ def test_create_cookbook_fails_on_wrong_type(auth, client):
     auth.login()
     test_data = {**new_cb_dict, "type": "something stupid"}
     response = client.post(
-        "/api/1/books", json=test_data, headers=auth.token_auth_header
+        BOOK_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
     assert response.status_code == 400
 
 
 def test_create_cookbook_fails_on_missing_login(client):
-    response = client.post("/api/1/books", json=new_cb_dict)
+    response = client.post(BOOK_ENDPOINT, json=new_cb_dict)
 
     assert response.status_code == 401
 
@@ -145,7 +148,7 @@ def test_update_cookbook(books, auth, client):
     auth.login()
 
     response = client.put(
-        "api/1/books/{}".format(books.book_1["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]),
         json=updated_dict,
         headers=auth.token_auth_header,
     )
@@ -164,7 +167,7 @@ def test_update_magazine(books, auth, client):
     updated_mag_dict = {**updated_dict, "type": "magazine", "issue": "newIss"}
 
     response = client.put(
-        "api/1/books/{}".format(books.book_2["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_2["id"]),
         json=updated_mag_dict,
         headers=auth.token_auth_header,
     )
@@ -182,7 +185,7 @@ def test_update_book_of_another_user_fails(books, auth, client):
     auth.login()
 
     response = client.put(
-        "api/1/books/{}".format(books.book_3["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_3["id"]),
         json=updated_dict,
         headers=auth.token_auth_header,
     )
@@ -194,7 +197,7 @@ def test_update_book_fails_on_not_existing_id(auth, client):
     auth.login()
 
     response = client.put(
-        "api/1/books/{}".format(1234),
+        BOOK_ENDPOINT_WITH_ID.format(1234),
         json=updated_dict,
         headers=auth.token_auth_header,
     )
@@ -208,7 +211,7 @@ def test_update_book_fails_on_missing_type(auth, client, books):
     data = {**updated_dict}.pop("type")
 
     response = client.put(
-        "api/1/books/{}".format(books.book_1["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]),
         json=data,
         headers=auth.token_auth_header,
     )
@@ -222,7 +225,7 @@ def test_update_book_fails_on_missing_title(auth, client, books):
     data = {**updated_dict}.pop("title")
 
     response = client.put(
-        "api/1/books/{}".format(books.book_1["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]),
         json=data,
         headers=auth.token_auth_header,
     )
@@ -236,7 +239,7 @@ def test_update_book_fails_on_wrong_type(auth, client, books):
     data = {**updated_dict, "type": "blahblah"}
 
     response = client.put(
-        "api/1/books/{}".format(books.book_1["id"]),
+        BOOK_ENDPOINT_WITH_ID.format(books.book_1["id"]),
         json=data,
         headers=auth.token_auth_header,
     )
@@ -249,7 +252,7 @@ def test_delete_book(books, auth, app, client):
     book_id = books.book_1["id"]
 
     response = client.delete(
-        "api/1/books/{}".format(book_id), headers=auth.token_auth_header
+        BOOK_ENDPOINT_WITH_ID.format(book_id), headers=auth.token_auth_header
     )
 
     assert response.status_code == 204
@@ -269,7 +272,7 @@ def test_delete_book_of_another_user(books, auth, app, client):
     book_id = books.book_3["id"]
 
     response = client.delete(
-        "api/1/books/{}".format(book_id), headers=auth.token_auth_header
+        BOOK_ENDPOINT_WITH_ID.format(book_id), headers=auth.token_auth_header
     )
 
     assert response.status_code == 404

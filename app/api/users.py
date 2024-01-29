@@ -4,6 +4,7 @@ from app.models.user import User
 from app.extensions import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
+from app.validators import required_fields
 
 
 @bp.route("/users/<int:id>", methods=["GET"])
@@ -62,11 +63,10 @@ def get_users():
 
 
 @bp.route("/users", methods=["POST"])
+@required_fields(["username", "email", "password"])
 def create_user():
     data = request.get_json() or {}
 
-    if "username" not in data or "email" not in data or "password" not in data:
-        return bad_request("must include username, email and password fields")
     if User.query.filter_by(username=data["username"]).first():
         return bad_request("please use a different username")
     if User.query.filter_by(email=data["email"]).first():
@@ -86,6 +86,7 @@ def create_user():
 
 @bp.route("/users/<int:id>", methods=["PUT"])
 @token_auth.login_required
+@required_fields(["username", "email", "password"])
 def update_user(id):
     if not (
         token_auth.current_user().id == id
@@ -95,9 +96,6 @@ def update_user(id):
 
     user: User = User.query.get_or_404(id)
     data = request.get_json() or {}
-
-    if "username" not in data or "email" not in data or "password" not in data:
-        return bad_request("must include username, email and password fields")
 
     username = data["username"]
     email = data["email"]
