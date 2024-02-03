@@ -351,7 +351,7 @@ def test_get_users(client, auth):
     )
 
     assert response.status_code == 200
-    assert type(response.json) == list
+    assert isinstance(response.json, list)
     assert len(response.json) > 1
     assert "username" in response.json[0]
     assert "email" in response.json[0]

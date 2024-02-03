@@ -1,5 +1,6 @@
 from flask import url_for
 from app.extensions import db
+from datetime import datetime
 
 
 class Book(db.Model):
@@ -7,6 +8,7 @@ class Book(db.Model):
     title = db.Column(db.String(256), nullable=False)
     type = db.Column(db.String(64))
     year = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 

@@ -300,6 +300,208 @@ paths:
                   exists:
                     type: boolean
 
+  /user_groups:
+    post:
+      summary: create user group
+      description: create a new user group, the creating user becomes the group admin
+      operationId: create_new_user_group
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: user group data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroup'
+      responses:
+        '201':
+          description: user group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /user_groups/{id}:
+    get:
+      summary: get user group
+      description: get user group by id
+      operationId: get_user_group
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user group id
+      responses:
+        '200':
+          description: user group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: delete user group
+      description: delete user group by id, only the group admin can delete the group
+      operationId: delete_user_group
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user group id
+      responses:
+        '204':
+          description: user group deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /user_groups/{id}/users:
+    put:
+      summary: add user to user group
+      description: add user to user group by id, only the group admin can add users
+      operationId: add_user_to_group
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user group id
+      requestBody:
+        description: user data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  format: int32
+      responses:
+        '200':
+          description: user group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+  /user_groups/{id}/users/email:
+    put:
+      summary: add user to user group by email
+      description: add user to user group by email, only the group admin can add users
+      operationId: add_user_to_group_by_email
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user group id
+      requestBody:
+        description: user data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: user group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '400':  
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /user_groups/{id}/users/{user_id}:
+    delete:
+      summary: remove user from user group
+      description: remove user from user group by id, only the group admin can remove users
+      operationId: remove_user_from_group
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user group id
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: user id
+      responses:
+        '204':
+          description: user removed from group
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
   /books:
     post:
       summary: create book
@@ -971,3 +1173,35 @@ components:
           format: color
       required:
         - tag_name
+
+    UserGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          readOnly: true
+        group_name:
+          type: string
+        group_admin:
+          type: integer
+          format: int32
+          readOnly: true
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          readOnly: true
+        _links:
+          type: object
+          readOnly: true
+          properties:
+            self:
+              type: string
+              description: link to user group
+            users:
+              type: array
+              items:
+                type: string
+                format: uri
+                description: link to users

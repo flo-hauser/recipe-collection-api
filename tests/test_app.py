@@ -3,7 +3,6 @@ def test_config(app):
 
 
 def test_client(client):
-    a = str(type(client))
     assert str(type(client)) == "<class 'flask.testing.FlaskClient'>"
 
 

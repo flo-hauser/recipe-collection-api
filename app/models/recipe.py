@@ -3,6 +3,7 @@ from app.extensions import db
 from app.models.rating import Rating
 from app.models.tag import Tag
 from app.models.recipe_tag import recipe_tags
+from datetime import datetime
 
 
 class Recipe(db.Model):
@@ -10,6 +11,7 @@ class Recipe(db.Model):
     title = db.Column(db.String(256), nullable=False)
     page = db.Column(db.Integer)
     image = db.Column(db.String())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

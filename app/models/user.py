@@ -12,6 +12,7 @@ class User(db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
@@ -24,6 +25,17 @@ class User(db.Model):
     recipes = db.relationship("Recipe", cascade=CASCADE_OPTIONS)
     books = db.relationship("Book", cascade=CASCADE_OPTIONS)
     ratings = db.relationship("Rating", cascade=CASCADE_OPTIONS)
+
+    user_group_id = db.Column(db.Integer, db.ForeignKey("user_group.id", ondelete="SET NULL"))
+    user_group = db.relationship(
+        "UserGroup", back_populates="users", foreign_keys=[user_group_id]
+    )
+    group_admin_of = db.relationship(
+        "UserGroup",
+        back_populates="group_admin",
+        uselist=False,
+        foreign_keys="UserGroup.group_admin_user_id",
+    )
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
@@ -47,9 +59,13 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "roles": self.get_roles(),
-            # "last_seen": self.last_seen.isoformat() + "Z",
             "_links": {
                 "self": url_for("api.get_user", id=self.id),
+                "user_group": (
+                    url_for("api.get_user_group", id=self.user_group_id)
+                    if self.user_group_id
+                    else None
+                ),
             },
         }
         if include_email:
@@ -59,7 +75,9 @@ class User(db.Model):
     def get_token(self, expires_in=3600, force_new=False):
         now = datetime.utcnow()
 
-        if (self.token and self.token_expiration > now + timedelta(seconds=60)) and not force_new:
+        if (
+            self.token and self.token_expiration > now + timedelta(seconds=60)
+        ) and not force_new:
             return self.token
 
         self.token = secrets.token_hex(64)
@@ -76,7 +94,7 @@ class User(db.Model):
             return liftetime.seconds
         else:
             return 0
-    
+
     def get_refresh_token(self, expires_in=100):
         now = datetime.utcnow()
 
@@ -87,7 +105,7 @@ class User(db.Model):
         db.session.commit()
 
         return self.refresh_token
-    
+
     def get_refresh_token_lifetime(self):
         if self.refresh_token_expiration:
             liftetime = self.token_expiration - datetime.utcnow()

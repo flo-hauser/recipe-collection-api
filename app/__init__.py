@@ -32,6 +32,7 @@ def create_app(config_class=Config):
 
 
 from app.models.user import User
+from app.models.user_group import UserGroup
 from app.models.role import Role
 from app.models.recipe import Recipe
 from app.models.book import Book
