@@ -81,6 +81,18 @@ def test_create_new_recipe(auth, client, books, recipes):
     assert "_links" in res_data
     assert res_data["_links"]["book"][-1] == str(new_recipe_dict["book_id"])
 
+def test_create_new_recipe_on_another_users_book_fails(auth, client, books, recipes):
+    auth.login()
+
+    test_data = {k: new_recipe_dict[k] for k in ["title", "page", "book_id"]}
+    test_data["book_id"] = books.book_3["id"]
+
+    response = client.post(
+        RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
+    )
+
+    assert response.status_code == 403
+
 
 def test_create_new_recipe_with_rating(auth, client, books, recipes):
     auth.login()

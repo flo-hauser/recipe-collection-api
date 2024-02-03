@@ -44,6 +44,9 @@ def create_recipe():
     if not book:
         abort(404)
 
+    if book.user_id != user.id:
+        abort(403)
+
     recipe = Recipe()
 
     recipe.from_dict(data)
