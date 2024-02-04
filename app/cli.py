@@ -1,8 +1,12 @@
+import os
+from os import getenv
+from dotenv import load_dotenv
 from app.extensions import db
-
 from app.models.user import User
 from app.models.role import Role
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, ".env"))
 
 def register_cli(app):
     @app.cli.command("init_db")
@@ -21,11 +25,10 @@ def register_cli(app):
         db.session.commit()
 
         # Create user admin
-        # TODO get admin credentials and data from enviroment vars
         admin = User()
-        admin.username = "admin"
-        admin.set_password("admin")
-        admin.email = "example@example.com"
+        admin.username = getenv("ADMIN_USER", "admin")
+        admin.set_password(getenv("ADMIN_PASSWORD", "admin"))
+        admin.email = getenv("ADMIN_EMAIL", "admin@example.com")
         admin.roles.append(admin_role)
         admin.roles.append(user_role)
 

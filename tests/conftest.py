@@ -1,4 +1,5 @@
 import pytest
+from os import getenv
 from app import create_app
 from config import TestConfig
 from tests.auth_actions import AuthActions
@@ -27,11 +28,10 @@ def app():
         db.session.add(user_role)
 
         # Create user admin
-        # TODO get admin credentials and data from enviroment vars
         admin = User()
-        admin.username = "admin"
-        admin.set_password("admin")
-        admin.email = "admin@example.com"
+        admin.username = getenv("ADMIN_USER", "admin")
+        admin.set_password(getenv("ADMIN_PASSWORD", "admin"))
+        admin.email = getenv("ADMIN_EMAIL", "admin@example.com")
         admin.roles.append(admin_role)
         admin.roles.append(user_role)
         db.session.add(admin)
