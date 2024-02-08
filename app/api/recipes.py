@@ -1,8 +1,7 @@
 from . import bp
-from app.api.errors import bad_request
+from flask import jsonify, request, url_for, abort
 from app.models.user import User
 from app.models.recipe import Recipe
-from app.models.book import Book
 from app.models.rating import Rating
 from app.models.recipe_tag import recipe_tags
 from app.extensions import db
@@ -12,8 +11,10 @@ from app.validators import (
     validate_rating,
     validate_tags,
 )
-from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
+from app.queries.recipe import get_user_recipes_query, get_user_recipes_by_id_query
+from app.queries.book import get_user_books_by_id_query
+from app.queries.rating import get_rating_by_recipe_query
 
 
 @bp.route("/recipes", methods=["GET"])
@@ -21,9 +22,7 @@ from app.api.auth import token_auth
 def get_all_recipes():
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Recipe).join(User.recipes).where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_recipes_query(user))
     recipes = result.scalars().all()
 
     return jsonify([recipe.to_dict() for recipe in recipes])
@@ -39,16 +38,12 @@ def create_recipe():
     data = request.get_json() or {}
 
     # Get referenced Book
-    select_book = db.select(Book).where(Book.id == data["book_id"])
+    select_book = get_user_books_by_id_query(user, data["book_id"])
     book = db.session.execute(select_book).scalars().one_or_none()
     if not book:
         abort(404)
 
-    if book.user_id != user.id:
-        abort(403)
-
     recipe = Recipe()
-
     recipe.from_dict(data)
     recipe.book = book
     recipe.user = user
@@ -78,12 +73,7 @@ def create_recipe():
 def get_recipe(recipe_id):
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Recipe)
-        .join(User.recipes)
-        .where(Recipe.id == recipe_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_recipes_by_id_query(user, recipe_id))
 
     recipe = result.scalars().one_or_none()
     if not recipe:
@@ -100,21 +90,11 @@ def search_recipe():
     book = request.args.get("book")
 
     if not (search_term or book):
-        query = db.select(Recipe).join(User.recipes).where(User.id == user.id)
+        query = get_user_recipes_query(user)
     elif search_term and not book:
-        query = (
-            db.select(Recipe)
-            .join(User.recipes)
-            .where(User.id == user.id)
-            .where(Recipe.title.contains(search_term))
-        )
+        query = get_user_recipes_query(user).where(Recipe.title.contains(search_term))
     elif book and not search_term:
-        query = (
-            db.select(Recipe)
-            .join(User.recipes)
-            .where(User.id == user.id)
-            .where(Recipe.book_id == book)
-        )
+        query = get_user_recipes_query(user).where(Recipe.book_id == book)
     recipes = db.session.execute(query).scalars().all()
 
     return jsonify([recipe.to_dict() for recipe in recipes])
@@ -130,18 +110,13 @@ def update_recipe(recipe_id):
     data = request.get_json() or {}
 
     # Get referenced Book
-    select_book = db.select(Book).where(Book.id == data["book_id"])
+    select_book = get_user_books_by_id_query(user, data["book_id"])
     book = db.session.execute(select_book).scalars().one_or_none()
     if not book:
         abort(404)
 
     # Get existing Recipe
-    result = db.session.execute(
-        db.select(Recipe)
-        .join(User.recipes)
-        .where(Recipe.id == recipe_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_recipes_by_id_query(user, recipe_id))
     recipe: Recipe = result.scalars().one_or_none()
     if not recipe:
         abort(404)
@@ -163,16 +138,14 @@ def update_recipe(recipe_id):
     rating = data["rating"]
     if rating:
         r: Rating = (
-            db.session.execute(
-                db.select(Rating)
-                .where(Rating.recipe_id == recipe_id)
-                .where(Rating.user_id == user.id)
-            )
+            db.session.execute(get_rating_by_recipe_query(user, recipe))
             .scalars()
             .one_or_none()
         )
+        # if rating exists, update it
         if r:
             r.rating = rating
+        # else create new rating
         else:
             r = Rating()
             r.rating = rating
@@ -191,12 +164,7 @@ def delete_recipe(recipe_id):
     user: User = token_auth.current_user()
 
     # Get existing Recipe
-    result = db.session.execute(
-        db.select(Recipe)
-        .join(User.recipes)
-        .where(Recipe.id == recipe_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_recipes_by_id_query(user, recipe_id))
     recipe: Recipe = result.scalars().one_or_none()
     if not recipe:
         abort(404)
@@ -224,23 +192,14 @@ def rate_recipe(recipe_id):
     rating = request.args.get("rating")
 
     # Get existing Recipe
-    result = db.session.execute(
-        db.select(Recipe)
-        .join(User.recipes)
-        .where(Recipe.id == recipe_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_recipes_by_id_query(user, recipe_id))
     recipe: Recipe = result.scalars().one_or_none()
     if not recipe:
         abort(404)
 
     # Get existing Rating
     r: Rating = (
-        db.session.execute(
-            db.select(Rating)
-            .where(Rating.recipe_id == recipe_id)
-            .where(Rating.user_id == user.id)
-        )
+        db.session.execute(get_rating_by_recipe_query(user, recipe))
         .scalars()
         .one_or_none()
     )

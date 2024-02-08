@@ -16,6 +16,7 @@ class Book(db.Model):
     recipes = db.relationship(
         "Recipe", back_populates="book", cascade="all, delete-orphan"
     )
+    user = db.relationship("User", back_populates="books")
 
     __mapper_args__ = {
         "polymorphic_identity": "book",
