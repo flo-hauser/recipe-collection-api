@@ -67,6 +67,8 @@ def _validate_tag(tag):
 
 def _validate_tag_color(tag):
     if "color" in tag:
+        if tag["color"] is None:  # may be empty
+            return True
         if not isinstance(tag["color"], str):
             return False
         if len(tag["color"]) > max_tag_color_length:
@@ -76,6 +78,8 @@ def _validate_tag_color(tag):
 
 def _validate_tag_type(tag):
     if "tag_type" in tag:
+        if tag["tag_type"] is None:  # may be empty
+            return True
         if not isinstance(tag["tag_type"], str):
             return False
         if len(tag["tag_type"]) > max_tag_type_length:

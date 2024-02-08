@@ -84,7 +84,10 @@ def test_validate_tags_passes(basic_app):
 
     # Test with full tag
     with basic_app.test_request_context(
-        method="POST", json={"tags": [{"id": 1, "tag_name": "tag", "color": "color", "tag_type": "type"}]}
+        method="POST",
+        json={
+            "tags": [{"id": 1, "tag_name": "tag", "color": "color", "tag_type": "type"}]
+        },
     ):
         response = dummy_route()
         assert response.status_code == 200
@@ -99,6 +102,22 @@ def test_validate_tags_passes(basic_app):
     # test with only tag_name
     with basic_app.test_request_context(
         method="POST", json={"tags": [{"tag_name": "tag"}]}
+    ):
+        response = dummy_route()
+        assert response.status_code == 200
+        assert response.json["message"] == "success"
+
+    # test with empty color
+    with basic_app.test_request_context(
+        method="POST", json={"tags": [{"tag_name": "tag", "color": None}]}
+    ):
+        response = dummy_route()
+        assert response.status_code == 200
+        assert response.json["message"] == "success"
+
+    # test with empty tag_type
+    with basic_app.test_request_context(
+        method="POST", json={"tags": [{"tag_name": "tag", "tag_type": None}]}
     ):
         response = dummy_route()
         assert response.status_code == 200
