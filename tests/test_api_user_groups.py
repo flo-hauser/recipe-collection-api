@@ -1,3 +1,5 @@
+from flask import app
+from app.models.user_group import UserGroup
 from tests.test_api_user import USER_ENDPOINT_WITH_ID
 
 USER_GROUP_ENDPOINT = "api/1/user_groups"
@@ -236,7 +238,7 @@ def test_remove_user_fails_if_is_admin(client, auth):
 
     # remove user
     response = client.delete(
-        USER_GROUP_ENDPOINT_USER_ID.format(1, auth.user.id),
+        USER_GROUP_ENDPOINT_USER_ID.format(response.json["id"], auth.user.id),
         headers=auth.token_auth_header,
     )
 
@@ -253,6 +255,18 @@ def test_remove_user_as_anonymous(client):
     )
 
     assert response.status_code == 401
+
+
+def test_remove_user_as_non_group_member_fails(client, auth):
+    auth.login()
+
+    # remove user
+    response = client.delete(
+        USER_GROUP_ENDPOINT_USER_ID.format(1, 3),
+        headers=auth.token_auth_header,
+    )
+
+    assert response.status_code == 403
 
 
 def test_get_user_group(auth, client):

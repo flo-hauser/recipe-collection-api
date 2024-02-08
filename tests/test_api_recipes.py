@@ -91,7 +91,7 @@ def test_create_new_recipe_on_another_users_book_fails(auth, client, books, reci
         RECIPE_ENDPOINT, json=test_data, headers=auth.token_auth_header
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 def test_create_new_recipe_with_rating(auth, client, books, recipes):

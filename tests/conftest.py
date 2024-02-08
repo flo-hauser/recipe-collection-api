@@ -8,10 +8,13 @@ from tests.recipe_fixtures import RecipeFixtures
 from app.extensions import db
 from app.models.role import Role
 from app.models.user import User
+from app.models.user_group import UserGroup
+
 
 @pytest.fixture
 def basic_app():
     yield create_app(TestConfig)
+
 
 @pytest.fixture
 def app():
@@ -47,7 +50,40 @@ def app():
             u.from_dict(user_data, new_user=True)
             db.session.add(u)
 
+        # 2 users belonging to one group
+        # for testing the user_group features
+        u_g_1 = User()
+        user_data = {
+            "username": "user_5",
+            "email": "user_5@example.com",
+            "password": "pass_5",
+        }
+        u_g_1.from_dict(user_data, new_user=True)
+        db.session.add(u_g_1)
         db.session.commit()
+
+        user_group = UserGroup()
+        user_group.group_name = "group_name"
+        user_group.group_admin = u_g_1
+        db.session.add(user_group)
+        db.session.commit()
+
+        u_g_1.user_group = user_group
+        db.session.add(u_g_1)
+
+        u_g_2 = User()
+        user_data = {
+            "username": "user_6",
+            "email": "user_6@example.com",
+            "password": "pass_6",
+        }
+        u_g_2.from_dict(user_data, new_user=True)
+        u_g_2.user_group = user_group
+
+        db.session.add(u_g_2)
+        db.session.commit()
+
+        print("Database setup complete")
 
     yield app
 

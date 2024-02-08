@@ -7,7 +7,7 @@ from app.models.tag import Tag
 
 class RecipeFixtures:
     """Sets ip Recipe Fixtures
-    depends on user_1, user_2 from app fictures and BookFixtures
+    depends on user_1, user_2 from app fixtures and BookFixtures
     """
 
     def __init__(self, app):
