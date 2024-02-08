@@ -238,3 +238,26 @@ def test_user_modifies_shared_recipe_and_adds_rating(app, client, auth):
     assert response.status_code == 200
     assert response.json["title"] == "new_title"
     assert response.json["rating"] == 4
+
+
+def test_search_returns_shared_recipes(app, client, auth):
+    """search returns recipes from the group"""
+
+    new_books = _create_shared_books(client, auth)
+    _create_shared_recipes(client, auth, new_books)
+
+    auth.login("user_5", "pass_5")
+    response = client.get(
+        RECIPE_SEARCH, query_string={"q": "r_1"}, headers=auth.token_auth_header
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "r_1"
+
+    auth.login("user_6", "pass_6")
+    response = client.get(
+        RECIPE_SEARCH, query_string={"q": "r_1"}, headers=auth.token_auth_header
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["title"] == "r_1"
