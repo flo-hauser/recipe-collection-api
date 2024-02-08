@@ -14,7 +14,7 @@ from app.validators import (
 from app.api.auth import token_auth
 from app.queries.recipe import get_user_recipes_query, get_user_recipes_by_id_query
 from app.queries.book import get_user_books_by_id_query
-from app.queries.rating import get_rating_by_recipe_query
+from app.queries.rating import get_rating_by_recipe_and_user_query
 
 
 @bp.route("/recipes", methods=["GET"])
@@ -138,7 +138,7 @@ def update_recipe(recipe_id):
     rating = data["rating"]
     if rating:
         r: Rating = (
-            db.session.execute(get_rating_by_recipe_query(user, recipe))
+            db.session.execute(get_rating_by_recipe_and_user_query(user, recipe))
             .scalars()
             .one_or_none()
         )
@@ -197,9 +197,9 @@ def rate_recipe(recipe_id):
     if not recipe:
         abort(404)
 
-    # Get existing Rating
+    # Get existing Rating of User
     r: Rating = (
-        db.session.execute(get_rating_by_recipe_query(user, recipe))
+        db.session.execute(get_rating_by_recipe_and_user_query(user, recipe))
         .scalars()
         .one_or_none()
     )

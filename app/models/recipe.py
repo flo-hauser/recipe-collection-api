@@ -45,12 +45,12 @@ class Recipe(db.Model):
 
     def to_dict(self):
         # Calculate average rating
-        average_rating = (
-            db.session.execute(
-                db.select(db.func.avg(Rating.rating)).where(Rating.recipe_id == self.id)
-            ).scalar()
-            or 0
+        stmt = (
+            db.select(db.func.avg(Rating.rating))
+            .where(Rating.recipe_id == self.id)
+            .group_by(Rating.recipe_id)
         )
+        average_rating = db.session.execute(stmt).scalar() or 0
 
         data = {
             "id": self.id,
@@ -63,12 +63,14 @@ class Recipe(db.Model):
                 "self": url_for("api.get_recipe", recipe_id=self.id),
                 "user": url_for("api.get_user", id=self.user_id),
                 "book": url_for("api.get_book", book_id=self.book_id),
-                "image": "/images/{}/{}".format(self.id, self.image)
-                if self.image
-                else None,
-                "thumbnail": "/images/{}/{}.thumbnail".format(self.id, self.image)
-                if self.image
-                else None,
+                "image": (
+                    "/images/{}/{}".format(self.id, self.image) if self.image else None
+                ),
+                "thumbnail": (
+                    "/images/{}/{}.thumbnail".format(self.id, self.image)
+                    if self.image
+                    else None
+                ),
             },
         }
         return data
