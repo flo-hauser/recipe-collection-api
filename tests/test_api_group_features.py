@@ -261,3 +261,36 @@ def test_search_returns_shared_recipes(app, client, auth):
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["title"] == "r_1"
+
+
+def test_get_books_of_group(client, auth):
+    """Test that users of the same group can see each other's books"""
+
+    new_books = _create_shared_books(client, auth)
+
+    auth.login("user_5", "pass_5")
+    response = client.get(BOOK_ENDPOINT, headers=auth.token_auth_header)
+    assert response.status_code == 200
+    assert len(response.json) == 3
+    assert response.json == new_books
+
+    auth.login("user_6", "pass_6")
+    response_2 = client.get(BOOK_ENDPOINT, headers=auth.token_auth_header)
+    assert response_2.status_code == 200
+    assert response_2.json == response.json
+
+
+def test_modify_book_of_group(client, auth):
+    """Test that users of the same group can modify each other's books"""
+
+    new_books = _create_shared_books(client, auth)
+
+    auth.login("user_5", "pass_5")
+    response = client.put(
+        BOOK_ENDPOINT_WITH_ID.format(new_books[2]["id"]),
+        json={"title": "new_title", "type": "cookbook"},
+        headers=auth.token_auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json["title"] == "new_title"
+    assert response.json["type"] == "cookbook"

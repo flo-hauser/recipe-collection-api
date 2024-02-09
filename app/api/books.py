@@ -6,6 +6,7 @@ from app.extensions import db
 from flask import jsonify, request, url_for, abort
 from app.api.auth import token_auth
 from app.validators import required_fields, validate_book_type
+from app.queries.book import get_user_books_query, get_user_books_by_id_query
 
 
 @bp.route("/books/types", methods=["GET"])
@@ -48,9 +49,7 @@ def create_book():
 def get_all_books():
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Book).join(User.books).where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_books_query(user))
     books = result.scalars().all()
 
     return jsonify([book.to_dict() for book in books])
@@ -61,12 +60,7 @@ def get_all_books():
 def get_book(book_id):
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Book)
-        .join(User.books)
-        .where(Book.id == book_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_books_by_id_query(user, book_id))
     book = result.scalars().one_or_none()
     if not book:
         abort(404)
@@ -81,12 +75,7 @@ def get_book(book_id):
 def update_book(book_id):
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Book)
-        .join(User.books)
-        .where(Book.id == book_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_books_by_id_query(user, book_id))
     book = result.scalars().one_or_none()
     if not book:
         abort(404)
@@ -112,12 +101,7 @@ def update_book(book_id):
 def delete_book(book_id):
     user: User = token_auth.current_user()
 
-    result = db.session.execute(
-        db.select(Book)
-        .join(User.books)
-        .where(Book.id == book_id)
-        .where(User.id == user.id)
-    )
+    result = db.session.execute(get_user_books_by_id_query(user, book_id))
     book = result.scalars().one_or_none()
     if not book:
         abort(404)
