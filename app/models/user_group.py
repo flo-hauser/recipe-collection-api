@@ -27,11 +27,12 @@ class UserGroup(db.Model):
         data = {
             "id": self.id,
             "group_name": self.group_name,
-            "group_admin": self.group_admin.username,
+            "group_admin": self.group_admin.to_dict() if self.group_admin else None,
             "users": [user.to_dict() for user in self.users],
             "_links": {
                 "self": url_for("api.get_user_group", id=self.id),
                 "users": [url_for("api.get_user", id=user.id) for user in self.users],
+                "group_admin": url_for("api.get_user", id=self.group_admin.id),
             },
         }
 

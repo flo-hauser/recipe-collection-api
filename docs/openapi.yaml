@@ -15,7 +15,7 @@ tags:
   - name: books
     description: operations on books
   - name: general
-    description: general operations 
+    description: general operations
   - name: users
     description: operations on users
 
@@ -28,7 +28,7 @@ paths:
       tags:
         - general
       responses:
-        '200':
+        "200":
           description: healthy
           content:
             application/json:
@@ -49,7 +49,7 @@ paths:
       security:
         - basicAuth: []
       responses:
-        '200':
+        "200":
           description: token
           content:
             application/json:
@@ -71,8 +71,8 @@ paths:
               schema:
                 type: string
                 example: refresh_token=longtokenstring; Expires=Fri, 12 Apr 2024 06:36:37 GMT; Secure; HttpOnly; Path=/; SameSite=Lax
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
     delete:
       summary: logout
       description: revoke current token
@@ -82,11 +82,11 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: token deleted
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
   /tokens/refresh:
     get:
       summary: get a refresh token
@@ -95,9 +95,9 @@ paths:
       tags:
         - tokens
       security:
-        - cookieAuth: []      
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           description: token
           content:
             application/json:
@@ -113,11 +113,11 @@ paths:
                     type: integer
                     format: int32
                     description: token lifetime in seconds
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-  
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
   /users/{user_id}:
     get:
       summary: get user
@@ -136,16 +136,16 @@ paths:
           required: true
           description: user id
       responses:
-        '200':
+        "200":
           description: user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
     put:
       summary: update user
       description: update user by id
@@ -168,18 +168,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
       responses:
-        '200':
+        "200":
           description: user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
   /users/me:
     get:
       summary: get current user
@@ -190,14 +190,14 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   /users:
     get:
       summary: get users
@@ -208,16 +208,16 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: users
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                  $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
     post:
       summary: create user
@@ -231,16 +231,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
       responses:
-        '201':
+        "201":
           description: user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
 
   /users/search/match:
     get:
@@ -261,18 +261,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: users
           content:
             application/json:
               schema:
                 type: object
                 items:
-                  $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                  $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
   /users/exists:
     get:
       summary: check if user exists
@@ -290,7 +290,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: user exists
           content:
             application/json:
@@ -315,18 +315,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserGroup'
+              $ref: "#/components/schemas/UserGroup"
       responses:
-        '201':
+        "201":
           description: user group
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroup'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                $ref: "#/components/schemas/UserGroup"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
   /user_groups/{id}:
     get:
@@ -346,16 +346,16 @@ paths:
           required: true
           description: user group id
       responses:
-        '200':
+        "200":
           description: user group
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroup'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/UserGroup"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
     delete:
       summary: delete user group
       description: delete user group by id, only the group admin can delete the group
@@ -373,14 +373,14 @@ paths:
           required: true
           description: user group id
       responses:
-        '204':
+        "204":
           description: user group deleted
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
 
   /user_groups/{id}/users:
     put:
@@ -411,20 +411,20 @@ paths:
                   type: integer
                   format: int32
       responses:
-        '200':
+        "200":
           description: user group
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroup'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+                $ref: "#/components/schemas/UserGroup"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
   /user_groups/{id}/users/email:
     put:
       summary: add user to user group by email
@@ -453,20 +453,20 @@ paths:
                 email:
                   type: string
       responses:
-        '200':
+        "200":
           description: user group
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroup'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+                $ref: "#/components/schemas/UserGroup"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
 
   /user_groups/{id}/users/{user_id}:
     delete:
@@ -493,14 +493,14 @@ paths:
           required: true
           description: user id
       responses:
-        '204':
+        "204":
           description: user removed from group
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
 
   /books:
     post:
@@ -518,21 +518,21 @@ paths:
           application/json:
             schema:
               oneOf:
-                - $ref: '#/components/schemas/Cookbook'
-                - $ref: '#/components/schemas/Magazine'
+                - $ref: "#/components/schemas/Cookbook"
+                - $ref: "#/components/schemas/Magazine"
       responses:
-        '201':
+        "201":
           description: book
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Cookbook'
-                  - $ref: '#/components/schemas/Magazine'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                  - $ref: "#/components/schemas/Cookbook"
+                  - $ref: "#/components/schemas/Magazine"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
     get:
       summary: get books
@@ -543,7 +543,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: books
           content:
             application/json:
@@ -551,10 +551,10 @@ paths:
                 type: array
                 items:
                   oneOf:
-                    - $ref: '#/components/schemas/Cookbook'
-                    - $ref: '#/components/schemas/Magazine'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                    - $ref: "#/components/schemas/Cookbook"
+                    - $ref: "#/components/schemas/Magazine"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
   /books/{book_id}:
     get:
@@ -574,19 +574,19 @@ paths:
           required: true
           description: book id
       responses:
-        '200':
+        "200":
           description: book
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Cookbook'
-                  - $ref: '#/components/schemas/Magazine'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-    put:  
+                  - $ref: "#/components/schemas/Cookbook"
+                  - $ref: "#/components/schemas/Magazine"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
       summary: update book
       description: update book by id
       operationId: update_book
@@ -609,24 +609,24 @@ paths:
           application/json:
             schema:
               oneOf:
-                - $ref: '#/components/schemas/Cookbook'
-                - $ref: '#/components/schemas/Magazine'
+                - $ref: "#/components/schemas/Cookbook"
+                - $ref: "#/components/schemas/Magazine"
       responses:
-        '200':
+        "200":
           description: book
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/Cookbook'
-                  - $ref: '#/components/schemas/Magazine'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-    delete: 
+                  - $ref: "#/components/schemas/Cookbook"
+                  - $ref: "#/components/schemas/Magazine"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
       summary: delete book
       description: delete book by id
       operationId: delete_book
@@ -643,12 +643,12 @@ paths:
           required: true
           description: book id
       responses:
-        '204':
+        "204":
           description: book deleted
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
   /recipes:
     post:
@@ -665,18 +665,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecipeInput'
+              $ref: "#/components/schemas/RecipeInput"
       responses:
-        '201':
+        "201":
           description: recipe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                $ref: "#/components/schemas/Recipe"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
     get:
       summary: get recipes
@@ -687,19 +687,19 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: recipes
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Recipe'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                  $ref: "#/components/schemas/Recipe"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
   /recipes/{recipe_id}:
-    get:  
+    get:
       summary: get recipe
       description: get recipe by id
       operationId: get_recipe
@@ -716,16 +716,16 @@ paths:
           required: true
           description: recipe id
       responses:
-        '200':
+        "200":
           description: recipe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/Recipe"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
     put:
       summary: update recipe
@@ -749,20 +749,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecipeInput'
+              $ref: "#/components/schemas/RecipeInput"
       responses:
-        '200':
+        "200":
           description: recipe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/Recipe"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
     delete:
       summary: delete recipe
@@ -781,12 +781,12 @@ paths:
           required: true
           description: recipe id
       responses:
-        '204':
+        "204":
           description: recipe deleted
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
   /recipes/search:
     get:
@@ -804,16 +804,16 @@ paths:
             type: string
           required: true
       responses:
-        '200':
+        "200":
           description: recipes
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Recipe'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                  $ref: "#/components/schemas/Recipe"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
   /recipes/{recipe_id}/image:
     put:
@@ -844,18 +844,18 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        "200":
           description: recipe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/Recipe"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
     delete:
       summary: delete recipe image
@@ -874,16 +874,16 @@ paths:
           required: true
           description: recipe id
       responses:
-        '200':
+        "200":
           description: recipe deleted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/Recipe"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
   /recipes/{recipe_id}/rating:
     put:
@@ -910,18 +910,18 @@ paths:
             maximum: 5
           required: true
       responses:
-        '200':
+        "200":
           description: recipe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Recipe'
-        '400':  
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
+                $ref: "#/components/schemas/Recipe"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 
 components:
   securitySchemes:
@@ -936,7 +936,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: string
-  
+
   responses:
     BadRequestError:
       description: bad request
@@ -1004,7 +1004,7 @@ components:
         tags:
           type: array
           items:
-            $ref: '#/components/schemas/Tag'
+            $ref: "#/components/schemas/Tag"
         _links:
           type: object
           readOnly: true
@@ -1052,7 +1052,7 @@ components:
         tags:
           type: array
           items:
-            $ref: '#/components/schemas/Tag'
+            $ref: "#/components/schemas/Tag"
       required:
         - title
         - page
@@ -1084,6 +1084,9 @@ components:
             self:
               type: string
               description: link to user
+            user_group:
+              type: string
+              description: link to user groups
     UserInput:
       type: object
       properties:
@@ -1132,7 +1135,7 @@ components:
                 description: link to recipes
     Cookbook:
       allOf:
-        - $ref: '#/components/schemas/Book'
+        - $ref: "#/components/schemas/Book"
         - type: object
           properties:
             type:
@@ -1143,7 +1146,7 @@ components:
               type: string
     Magazine:
       allOf:
-        - $ref: '#/components/schemas/Book'
+        - $ref: "#/components/schemas/Book"
         - type: object
           properties:
             type:
@@ -1184,13 +1187,15 @@ components:
         group_name:
           type: string
         group_admin:
-          type: integer
-          format: int32
           readOnly: true
+          type: object
+          properties:
+            allOf:
+              $ref: "#/components/schemas/User"
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
           readOnly: true
         _links:
           type: object
@@ -1205,3 +1210,7 @@ components:
                 type: string
                 format: uri
                 description: link to users
+            group_admin:
+              type: string
+              format: uri
+              description: link to group admin

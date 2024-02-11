@@ -23,7 +23,7 @@ def test_create_new_user_group(client, auth):
     assert response.status_code == 201
     data = response.json
     assert data["group_name"] == "test_group"
-    assert data["group_admin"] == auth.user.username
+    assert data["group_admin"]["username"] == auth.user.username
     assert len(data["users"]) == 1
     assert data["users"][0]["username"] == auth.user.username
     assert "self" in data["_links"]
@@ -299,7 +299,7 @@ def test_get_user_group(auth, client):
     assert response.status_code == 200
     data = response.json
     assert data["group_name"] == "test_group"
-    assert data["group_admin"] == auth.user.username
+    assert data["group_admin"]["username"] == auth.user.username
     assert len(data["users"]) == 2
     assert data["users"][0]["username"] == auth.user.username
     assert data["users"][1]["username"] == "user_2"
