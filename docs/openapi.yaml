@@ -1214,3 +1214,7 @@ components:
               type: string
               format: uri
               description: link to group admin
+            avatar:
+              type: string
+              format: uri
+              description: link to avatar

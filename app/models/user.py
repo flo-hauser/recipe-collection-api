@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 from app.models.user_roles import user_roles
 from app.models.role import Role
+import urllib, hashlib
 
 
 class User(db.Model):
@@ -26,7 +27,9 @@ class User(db.Model):
     books = db.relationship("Book", cascade=CASCADE_OPTIONS)
     ratings = db.relationship("Rating", cascade=CASCADE_OPTIONS)
 
-    user_group_id = db.Column(db.Integer, db.ForeignKey("user_group.id", ondelete="SET NULL"))
+    user_group_id = db.Column(
+        db.Integer, db.ForeignKey("user_group.id", ondelete="SET NULL")
+    )
     user_group = db.relationship(
         "UserGroup", back_populates="users", foreign_keys=[user_group_id]
     )
@@ -66,6 +69,7 @@ class User(db.Model):
                     if self.user_group_id
                     else None
                 ),
+                "avatar": self.generate_gravatar_url(),
             },
         }
         if include_email:
@@ -122,6 +126,15 @@ class User(db.Model):
 
     def get_roles(self):
         return [role.role_name for role in self.roles]
+
+    def generate_gravatar_url(self):
+        default = "monsterid"
+
+        gravatr_url = "https://www.gravatar.com/avatar/{}?d={}".format(
+            hashlib.md5(self.email.lower().encode("utf-8")).hexdigest(), default
+        )
+
+        return gravatr_url
 
     @staticmethod
     def check_token(token):
