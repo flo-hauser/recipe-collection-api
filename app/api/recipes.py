@@ -10,6 +10,7 @@ from app.validators import (
     required_query_params,
     validate_rating,
     validate_tags,
+    validate_limit,
 )
 from app.api.auth import token_auth
 from app.queries.recipe import get_user_recipes_query, get_user_recipes_by_id_query
@@ -96,6 +97,22 @@ def search_recipe():
     elif book and not search_term:
         query = get_user_recipes_query(user).where(Recipe.book_id == book)
     recipes = db.session.execute(query).scalars().all()
+
+    return jsonify([recipe.to_dict() for recipe in recipes])
+
+
+@bp.route("recipes/search/random", methods=["GET"])
+@token_auth.login_required
+@required_query_params(["limit"])
+@validate_limit
+def get_random_recipes():
+    user: User = token_auth.current_user()
+    n = request.args.get("limit")
+
+    result = db.session.execute(
+        get_user_recipes_query(user).order_by(db.func.random()).limit(n)
+    )
+    recipes = result.scalars().all()
 
     return jsonify([recipe.to_dict() for recipe in recipes])
 

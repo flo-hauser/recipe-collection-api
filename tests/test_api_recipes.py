@@ -8,6 +8,7 @@ RECIPE_ENDPOINT = "api/1/recipes"
 RECIPE_ENDPOINT_WITH_ID = "{}/{}".format(RECIPE_ENDPOINT, "{}")
 RECIPE_RATING = "{}/{}/rating".format(RECIPE_ENDPOINT, "{}")
 RECIPE_SEARCH = "{}/search".format(RECIPE_ENDPOINT)
+RECIPE_SEARCH_RANDOM = "{}/random".format(RECIPE_SEARCH)
 
 
 def test_get_all_recipes(client, auth, books, recipes):
@@ -80,6 +81,7 @@ def test_create_new_recipe(auth, client, books, recipes):
     assert res_data["rating"] == 0
     assert "_links" in res_data
     assert res_data["_links"]["book"][-1] == str(new_recipe_dict["book_id"])
+
 
 def test_create_new_recipe_on_another_users_book_fails(auth, client, books, recipes):
     auth.login()
@@ -452,4 +454,49 @@ def test_recipe_rating_invalid_rating(client, auth, books, recipes):
         headers=auth.token_auth_header,
         query_string={"another_query": 3},
     )
+    assert response.status_code == 400
+
+
+def test_recipe_search_random(client, auth, books, recipes):
+    auth.login()
+
+    limit = 2
+    response = client.get(
+        RECIPE_SEARCH_RANDOM,
+        headers=auth.token_auth_header,
+        query_string={"limit": limit},
+    )
+
+    assert response.status_code == 200
+    data = response.json
+    assert len(data) == limit
+
+
+def test_recipe_search_random_as_anonymous(client, auth):
+    limit = 2
+    response = client.get(
+        RECIPE_SEARCH_RANDOM,
+        headers=auth.token_auth_header,
+        query_string={"limit": limit},
+    )
+
+    assert response.status_code == 401
+
+
+def test_recipe_search_random_invalid_limit(client, auth):
+    auth.login()
+    response = client.get(
+        RECIPE_SEARCH_RANDOM,
+        headers=auth.token_auth_header,
+        query_string={"limit": "abc"},
+    )
+
+    assert response.status_code == 400
+
+    response = client.get(
+        RECIPE_SEARCH_RANDOM,
+        headers=auth.token_auth_header,
+        query_string={"limit": -1},
+    )
+
     assert response.status_code == 400
